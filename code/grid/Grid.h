@@ -26,7 +26,7 @@ namespace grid
     public:
         using Cost = int;
 
-        using Field = std::vector<std::vector<bool>>;
+        using Field = std::vector<std::vector<bool>>; // true means occupied
         using Costs = std::vector<std::vector<std::map<GridPoint, Cost>>>;
 
         explicit Grid(Field &&, Costs &&);
