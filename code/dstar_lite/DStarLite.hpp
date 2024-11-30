@@ -22,6 +22,7 @@ namespace unknownterrain
         std::map<grid::GridPoint, grid::Grid::Cost> rhs;
         std::map<grid::GridPoint, grid::Grid::Cost> g;
         std::set<std::pair<std::pair<grid::Grid::Cost, grid::Grid::Cost>, grid::GridPoint>> U;
+        std::map<grid::GridPoint, std::set<std::pair<grid::Grid::Cost, grid::Grid::Cost>>> UInvert;
 
         auto calculateKey = [&](const grid::GridPoint s){
             return std::make_pair
@@ -41,23 +42,18 @@ namespace unknownterrain
             }
 
             {
-                while (true) 
+                for (const auto& p : UInvert[u])
                 {
-                    bool found = false;
-                    for (const auto& p : U)
-                    {
-                        if (p.second == u) {
-                            U.erase(p);
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (not found) break;
-                }   
+                    U.erase(std::make_pair(p, u));
+                }
+                UInvert[u].clear();  
             }
 
             
-            if (g[u] != rhs[u]) U.insert(std::make_pair(calculateKey(u), u));
+            if (g[u] != rhs[u]) {
+                U.insert(std::make_pair(calculateKey(u), u));
+                UInvert[u].insert(calculateKey(u));
+            }
         };
 
         auto computeShortesPath = [&]() {
@@ -65,6 +61,7 @@ namespace unknownterrain
             {
                 const auto [kold, u] = *U.begin();
                 U.erase(U.begin());
+                UInvert[u].erase(kold);
                 if (grid.occupied(u))
                 {
                     continue;
@@ -72,6 +69,7 @@ namespace unknownterrain
                 if (kold < calculateKey(u))
                 {
                     U.insert(std::make_pair(calculateKey(u), u));
+                    UInvert[u].insert(calculateKey(u));
                 }
                 else if (g[u] > rhs[u])
                 {
@@ -103,6 +101,7 @@ namespace unknownterrain
             }
             rhs[goal] = 0;
             U.insert(std::make_pair(calculateKey(goal), goal));
+            UInvert[goal].insert(calculateKey(goal));
         };
 
         result::Path path;
