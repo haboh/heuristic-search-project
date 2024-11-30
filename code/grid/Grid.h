@@ -12,44 +12,37 @@ namespace grid
         GridPoint operator+(GridPoint) const;
         GridPoint operator-(GridPoint) const;
 
-        bool operator<(const GridPoint&) const;
-        bool operator==(const GridPoint&) const;
+        auto operator<=>(const GridPoint&) const = default;
 
         int x;
         int y;
     };
 
-    using Path = std::vector<GridPoint>;
-
     class Grid final
     {
     public:
-        using Cost = int;
-
+        using Cost = long long;
         using Field = std::vector<std::vector<bool>>; // true means occupied
-        using Costs = std::vector<std::vector<std::map<GridPoint, Cost>>>;
 
-        explicit Grid(Field &&, Costs &&);
+        explicit Grid(const Field&);
 
+        size_t getRows() const;
+        size_t getColumns() const;
+        
         bool occupied(GridPoint) const;
-
+        std::vector<GridPoint> getFreeNeighbours(GridPoint) const;
         std::vector<GridPoint> getNeighbours(GridPoint) const;
-
-        Cost getCost(GridPoint start, GridPoint end) const;
-
-        void changeCost(GridPoint start, GridPoint end, Cost);
+        bool validGridPoint(GridPoint) const;
+        Cost getCost(GridPoint, GridPoint) const;
 
     private:
         const std::vector<GridPoint> possibleMoves = {
             GridPoint{0, 1},
             GridPoint{0, -1},
             GridPoint{1, 0},
-            GridPoint{0, -1}
+            GridPoint{-1, 0}
         };
 
-        bool validGridPoint(GridPoint) const;
-
-        Field field;
-        Costs costs;
+        const Field& field;
     };
 }

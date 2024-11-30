@@ -4,15 +4,15 @@
 
 #include "PathSearchResult.h"
 
-namespace astar
+namespace unknownterrain
 {
-    class AStar final
+    class DStarLite final
     {
     public:
         template <typename HeuristicFunc>
         static result::PathSearchResult findShortestPath
         (
-            const grid::GridView& grid,
+            grid::GridView grid,
             grid::GridPoint start,
             grid::GridPoint goal,
             HeuristicFunc heuristicFunc
@@ -20,4 +20,4 @@ namespace astar
     };
 }
 
-#include "AStar.hpp"
+#include "DStarLite.hpp"

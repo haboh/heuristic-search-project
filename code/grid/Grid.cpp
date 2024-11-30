@@ -14,17 +14,21 @@ namespace grid
         return GridPoint{x - other.x, y - other.y};
     }
 
-    bool GridPoint::operator<(const GridPoint& other) const
-    {
-        return std::make_pair(x, y) < std::make_pair(other.x, other.y);
-    }
-
-    Grid::Grid(Field &&f, Costs &&c)
-        : field(std::move(f))
-        , costs(std::move(c))
+    Grid::Grid(const Field& f)
+        : field(f)
     {
     }
 
+    size_t Grid::getRows() const
+    {
+        return field.size();
+    }
+
+    size_t Grid::getColumns() const
+    {
+        return field[0].size();
+    }
+        
     bool Grid::validGridPoint(const GridPoint point) const
     {
         return static_cast<int>(field.size()) > point.x && static_cast<int>(field[0].size()) > point.y && point.x >= 0 && point.y >= 0;
@@ -42,7 +46,7 @@ namespace grid
         for (const auto possibleMove : possibleMoves)
         {
             const GridPoint newPoint = point + possibleMove;
-            if (validGridPoint(newPoint) && not occupied(newPoint))
+            if (validGridPoint(newPoint))
             {
                 neighbours.push_back(newPoint);
             }
@@ -50,13 +54,23 @@ namespace grid
         return neighbours;
     }
 
-    Grid::Cost Grid::getCost(GridPoint p1, GridPoint p2) const
+    std::vector<GridPoint> Grid::getFreeNeighbours(const GridPoint point) const
     {
-        return costs[p1.x][p1.y].at(p2 - p1);
+        std::vector<GridPoint> freeNeighbours;
+        for (const auto neighbour : getNeighbours(point))
+        {
+            if (not occupied(neighbour))
+            {
+                freeNeighbours.push_back(neighbour);
+            }
+        }
+        return freeNeighbours;
     }
 
-    void Grid::changeCost(GridPoint p1, GridPoint p2, Cost c)
+    Grid::Cost Grid::getCost(GridPoint point1, GridPoint point2) const
     {
-        costs[p1.x][p1.y].at(p2 - p1) = c;
+        assert(abs(point1.x - point2.x) + abs(point1.y - point2.y) == 1);
+
+        return 1;
     }
 }

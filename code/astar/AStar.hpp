@@ -15,26 +15,32 @@ namespace astar
             grid::Grid::Cost f;
             grid::Grid::Cost g;
             grid::GridPoint point;
-            Node* parent;
+            const Node* parent;
 
-            bool operator<(const Node&) const = default;
+            auto operator<=>(const Node&) const = default;
+        };
+
+        struct compareNodes {
+            bool operator() (const Node* node1, const Node* node2) const {
+                return (*node1) > (*node2);
+            }
         };
     }
 
     template <typename HeuristicFunc>
-    result::Result AStar::findShortestPath
+    result::PathSearchResult AStar::findShortestPath
     (
-        const grid::Grid& grid,
+        const grid::GridView& grid,
         grid::GridPoint start,
-        grid::GridPoint finish,
+        grid::GridPoint goal,
         HeuristicFunc heuristicFunc
     )
     {
-        std::priority_queue<const Node*> q;
-        q.push(new Node{.f = 0, .g = 0, .h = 0, .point = start, .parent = nullptr});
+        std::priority_queue<const Node*, std::vector<const Node*>, compareNodes> q;
+        q.push(new Node{.f = 0, .g = 0, .point = start, .parent = nullptr});
         std::set<grid::GridPoint> expanded;
 
-        Node* finalNode = nullptr;
+        const Node* finalNode = nullptr;
 
         while (q.size())
         {
@@ -46,19 +52,19 @@ namespace astar
                 continue;
             }
 
-            if (best.point == finish)
+            if (best.point == goal)
             {
-                finalNode = best;
+                finalNode = &best;
                 break;
             }
             expanded.insert(best.point);
 
-            for (const auto neighbour : grid.getNeighbours(best.point))
+            for (const auto neighbour : grid.getFreeNeighbours(best.point))
             {
                 const grid::Grid::Cost gvalue = best.g + grid.getCost(best.point, neighbour);
 
                 q.push(new Node{
-                    .f = gvalue + heuristicFunc(neighbour, finish),
+                    .f = gvalue + heuristicFunc(neighbour, goal),
                     .g = gvalue,
                     .point = neighbour,
                     .parent = &best
@@ -66,7 +72,7 @@ namespace astar
             }
         }
 
-        result::Result result;
+        result::PathSearchResult result;
 
         if (finalNode == nullptr)
         {

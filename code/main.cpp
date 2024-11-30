@@ -5,8 +5,12 @@
 #include <string>
 #include <vector>
 
-#include "astar/AStar.h"
-#include "grid/Grid.h"
+#include "AStarReplanning.h"
+#include "Grid.h"
+#include "GridView.h"
+#include "SWSFP.h"
+#include "DStarLite.h"
+#include "PathSearchResult.h"
 
 template <typename T>
 T read(std::istream& is) {
@@ -33,7 +37,6 @@ Field readMapFile(std::string filename) {
     int const height = read<int>(ifs);
     readToken(ifs, "width");
     int const width = read<int>(ifs);
-    std::cout << "Read: " << width << " x " << height << std::endl;
 
     readToken(ifs, "map");
     std::vector<std::vector<bool>> grid(height, std::vector<bool>(width, false));
@@ -59,35 +62,37 @@ struct Task {
     std::string name;
     int map_width;
     int height;
-    int start_x;
-    int start_y;
-    int goal_x;
-    int goal_y;
+    grid::GridPoint start;
+    grid::GridPoint goal;
     double correctAnswer;
 };
 
 std::vector<Task> readTasksFromFile(std::string filename) {
     std::ifstream ifs {filename };
-    // for (int i = 0; i < 10; ++i) {
-    //     auto r = read<std::string>(ifs);
-    //     std::cout << r << std::endl;
-    // }
     readToken(ifs, "version");
     readToken(ifs, "1");
     std::vector<Task> result;
     while (true) {
         if (ifs.eof() || ifs.fail() ||ifs.bad())
             return result;
+        int bucket = read<int>(ifs);
+        std::string name =        read<std::string>(ifs);
+        int map_width =           read<int>(ifs);
+        int height =              read<int>(ifs);
+        int start_x =             read<int>(ifs);
+        int start_y =             read<int>(ifs);
+        int goal_x =              read<int>(ifs);
+        int goal_y =              read<int>(ifs);
+        double correctAnswer =    read<double>(ifs);
+
         result.push_back(Task {
-            read<int>(ifs),
-            read<std::string>(ifs),
-            read<int>(ifs),
-            read<int>(ifs),
-            read<int>(ifs),
-            read<int>(ifs),
-            read<int>(ifs),
-            read<int>(ifs),
-            read<double>(ifs),
+            bucket,
+            name,
+            map_width,
+            height,
+            grid::GridPoint{start_x, start_y},
+            grid::GridPoint{goal_x, goal_y},
+            correctAnswer
         });
     }
 }
@@ -104,19 +109,53 @@ void displayMap(std::string filename) {
     }
 }
 
+
+void displayPath(const Field& grid, const result::Path& path)
+{
+    auto height = grid.size();
+    auto width = grid[0].size();
+    for (int y = 0; y < (int)height; ++y) {
+        for (int x = 0; x < (int)width; ++x) {
+            if (std::find(path.begin(), path.end(), grid::GridPoint{y, x}) != path.end()) {
+                std::cout << '$';
+            }
+            else {
+                std::cout << (grid[y][x] ? '@' : '.');
+            }
+        }
+        std::cout << std::endl;
+    }
+}
+
+
 void displayTasks(std::string filename) {
     auto tasks = readTasksFromFile(filename);
     for (auto task: tasks) {
         std::cout << "task bucket=" << task.bucket 
-            << " from (" <<task.start_x << ", " << task.start_y << ")"
-            << " to (" << task.goal_x << ", " << task.goal_y << ")" << std::endl;
+            << " from (" <<task.start.x << ", " << task.start.y << ")"
+            << " to (" << task.goal.x << ", " << task.goal.y << ")" << std::endl;
     }
     std::cout << "In total: " << tasks.size() << " entries\n";
 }
 
+
+grid::Grid::Cost manhattan(grid::GridPoint point1, grid::GridPoint point2)
+{
+    return std::abs(point1.x - point2.x) + abs(point2.y - point1.y);
+}
+
 int main()
 {
-    // displayMap("./data/arena.map");
-    displayTasks("./data/arena.map.scene");
+    const auto map = readMapFile("./data/arena.map");
+    const auto tasks = readTasksFromFile("./data/arena.map.scene");
+    grid::Grid grid(map);
+    
+    const auto res = unknownterrain::AStarReplanning::findShortestPath(grid::GridView(grid, 2), grid::GridPoint{10, 10}, grid::GridPoint{20, 20}, manhattan);
+    // const auto res = unknownterrain::SWSFP::findShortestPath(grid::GridView(grid, 2), grid::GridPoint{10, 10}, grid::GridPoint{40, 35});
+    // const auto res = unknownterrain::DStarLite::findShortestPath(grid::GridView(grid, 2), grid::GridPoint{10, 10}, grid::GridPoint{30, 30}, manhattan);
+
+    assert(res.pathFound);
+    result::validatePath(res.path, grid);
+    displayPath(map, res.path);
     return 0;
 }
