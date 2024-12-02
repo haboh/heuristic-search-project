@@ -16,7 +16,7 @@ namespace unknownterrain
         HeuristicFunc heuristicFunc
     )
     {
-        constexpr grid::Grid::Cost inifity_cost = std::numeric_limits<grid::Grid::Cost>::max() / 1000;
+        constexpr grid::Grid::Cost infinity_cost = std::numeric_limits<grid::Grid::Cost>::max() / 1000;
         
         grid::Grid::Cost km = 0;
         std::map<grid::GridPoint, grid::Grid::Cost> rhs;
@@ -34,7 +34,7 @@ namespace unknownterrain
 
         auto updateVertex = [&](const grid::GridPoint u) {
             if (u != goal) {
-                rhs[u] = inifity_cost;
+                rhs[u] = infinity_cost;
                 for (const auto& n : grid.getFreeNeighbours(u))
                 {
                     rhs[u] = std::min(rhs[u], g[n] + grid.getCost(u, n));
@@ -56,7 +56,7 @@ namespace unknownterrain
             }
         };
 
-        auto computeShortesPath = [&]() {
+        auto computeShortestPath = [&]() {
             while (U.begin()->first < calculateKey(start) || rhs[start] != g[start])
             {
                 const auto [kold, u] = *U.begin();
@@ -79,7 +79,7 @@ namespace unknownterrain
                         updateVertex(s);
                     }
                 } else {
-                    g[u] = inifity_cost;
+                    g[u] = infinity_cost;
                     for (const auto s : grid.getFreeNeighbours(u))
                     {
                         updateVertex(s);
@@ -95,8 +95,8 @@ namespace unknownterrain
             {
                 for (int j = 0; j < (int)grid.getColumns(); ++j)
                 {
-                    rhs[grid::GridPoint{i, j}] = inifity_cost;
-                    g[grid::GridPoint{i, j}] = inifity_cost;
+                    rhs[grid::GridPoint{i, j}] = infinity_cost;
+                    g[grid::GridPoint{i, j}] = infinity_cost;
                 }
             }
             rhs[goal] = 0;
@@ -109,10 +109,10 @@ namespace unknownterrain
 
         grid::GridPoint last = start;
         initialize();
-        computeShortesPath();
+        computeShortestPath();
         while (start != goal)
         {
-            if (g[start] >= inifity_cost)
+            if (g[start] >= infinity_cost)
             {
                 return result::PathSearchResult{
                     .pathFound = false,
