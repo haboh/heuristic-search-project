@@ -34,6 +34,15 @@ def draw_grid(draw_obj: ImageDraw, obstacles: List[point], scale: int):
             [top_left, bottom_right], fill=(70, 80, 80, 255), width=0.0
         )
 
+def draw_cell(draw_obj: ImageDraw, p: point, scale: int, color):
+    row = p.y
+    col = p.x
+    top_left = (col * scale, row * scale)
+    bottom_right = ((col + 1) * scale - 1, (row + 1) * scale - 1)
+    draw_obj.rectangle(
+        [top_left, bottom_right], fill=color, width=0.0
+    )
+
 def draw_agent(draw_obj: ImageDraw, agent: point, scale: int):
     row = agent.y
     col = agent.x
@@ -68,7 +77,7 @@ for line in lines[1:1000]:
     steps.append((pos, new_obstacles))
 
 
-width, height, visible_radius = list(map(int, lines[0].split()))
+width, height, visible_radius, start_x, start_y, goal_x, goal_y = list(map(int, lines[0].split()))
 scale = 10
 
 obstacles = []
@@ -80,6 +89,8 @@ for i, step in enumerate(steps):
     new_obstacles = step[1]
     obstacles += new_obstacles
     print(obstacles)
+    draw_cell(draw, point(start_x, start_y),  scale, (0, 200, 0))
+    draw_cell(draw, point(goal_x, goal_y),  scale, (0, 255, 0))
     draw_grid(draw, obstacles, scale)
     draw_agent(draw, agent_pos, scale)
     overlay = draw_visible_area(im, agent_pos, visible_radius, scale)

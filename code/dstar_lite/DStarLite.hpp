@@ -2,6 +2,7 @@
 
 #include "DStarLite.h"
 
+#include <fstream>
 #include <numeric>
 #include <set>
 
@@ -110,6 +111,11 @@ namespace unknownterrain
         grid::GridPoint last = start;
         initialize();
         computeShortestPath();
+        std::ofstream of("out");
+        of << grid.getColumns() << " " << grid.getRows() << " " << grid.getRadius() << " "
+            << start.x << " " << start.y << " "
+            << goal.x << " " << goal.y
+            << std::endl;
         while (start != goal)
         {
             if (g[start] >= infinity_cost)
@@ -134,6 +140,7 @@ namespace unknownterrain
                 }
             }
             start = newStart;
+            of << newStart.y << " " << newStart.x;
             path.push_back(start);
             const auto changed = grid.observe(start);
             if (changed.size())
@@ -142,6 +149,7 @@ namespace unknownterrain
                 last = start;
                 for (const auto& v : changed)
                 {
+                    of << " " << v.y << " " << v.x;
                     updateVertex(v);
                     for (const auto& n : grid.getFreeNeighbours(v))
                     {
@@ -149,6 +157,7 @@ namespace unknownterrain
                     }
                 }
             }
+            of << "\n";
         }   
 
         return result::PathSearchResult{
