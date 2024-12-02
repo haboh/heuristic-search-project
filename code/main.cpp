@@ -150,9 +150,9 @@ int main()
     const auto tasks = readTasksFromFile("./data/arena.map.scene");
     grid::Grid grid(map);
     
-    const auto res = unknownterrain::AStarReplanning::findShortestPath(grid::GridView(grid, 2), grid::GridPoint{10, 10}, grid::GridPoint{20, 20}, manhattan);
+    // const auto res = unknownterrain::AStarReplanning::findShortestPath(grid::GridView(grid, 2), grid::GridPoint{10, 10}, grid::GridPoint{20, 20}, manhattan);
     // const auto res = unknownterrain::SWSFP::findShortestPath(grid::GridView(grid, 2), grid::GridPoint{10, 10}, grid::GridPoint{40, 35});
-    // const auto res = unknownterrain::DStarLite::findShortestPath(grid::GridView(grid, 2), grid::GridPoint{10, 10}, grid::GridPoint{30, 30}, manhattan);
+    const auto res = unknownterrain::DStarLite::findShortestPath(grid::GridView(grid, 5), grid::GridPoint{10, 10}, grid::GridPoint{30, 30}, manhattan);
 
     assert(res.pathFound);
     result::validatePath(res.path, grid);
