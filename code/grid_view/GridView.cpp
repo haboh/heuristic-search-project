@@ -17,6 +17,11 @@ namespace grid
         return grid.getRows();
     }
 
+    size_t GridView::getRadius() const
+    {
+        return radius;
+    }
+
     size_t GridView::getColumns() const
     {
         return grid.getColumns();
@@ -35,6 +40,11 @@ namespace grid
     Grid::Cost GridView::getCost(GridPoint point1, GridPoint point2) const
     {
         return grid.getCost(point1, point2);
+    }
+
+    std::vector<GridPoint> GridView::getNeighbours(const GridPoint point) const
+    {
+        return grid.getNeighbours(point);
     }
 
     std::vector<GridPoint> GridView::getFreeNeighbours(const GridPoint point) const

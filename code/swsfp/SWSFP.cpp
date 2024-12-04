@@ -3,6 +3,7 @@
 #include <set>
 
 #include <numeric>
+#include <iostream>
 
 namespace unknownterrain
 {
@@ -25,6 +26,11 @@ namespace unknownterrain
                 rhs[point] = 0;
                 return;
             }
+            if (gridView.occupied(point))
+            {
+                rhs[point] = d[point] = inifity_cost;
+                return;
+            }
 
             rhs[point] = inifity_cost;
             for (const auto& n : gridView.getFreeNeighbours(point))
@@ -45,7 +51,7 @@ namespace unknownterrain
         };
 
         const auto updateNeigboursAndVertex = [&](grid::GridPoint point) {
-            for (const auto& n : gridView.getFreeNeighbours(point))
+            for (const auto& n : gridView.getNeighbours(point))
             {
                 computeRHS(n);
                 checkInconsistency(n);
@@ -119,6 +125,7 @@ namespace unknownterrain
             }
             path.push_back(start);
             gridView.observe(start);
+            updateNeigboursAndVertex(start);
             computePath();
         }
 
