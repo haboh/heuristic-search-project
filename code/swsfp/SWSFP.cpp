@@ -88,20 +88,21 @@ namespace unknownterrain
         inconsistentVertices.insert({computeKey(goal), goal});
         computePath();
 
-        if (d[start] >= grid::Grid::infinity_cost)
-        {
-            return result::PathSearchResult{
-                .pathFound = false,
-                .path = {},
-                .steps = 0,
-                .searchTreeSize = 0,
-                .openCount = 0,
-                .closedCount = 0
-            };
-        }
 
         while (start != goal)
         {
+            if (d[start] >= grid::Grid::infinity_cost)
+            {
+                return result::PathSearchResult{
+                    .pathFound = false,
+                    .path = {},
+                    .steps = 0,
+                    .searchTreeSize = 0,
+                    .openCount = 0,
+                    .closedCount = 0
+                };
+            }
+
             const auto& neighbours = gridView.getFreeNeighbours(start);
             start = neighbours.at(0);
             for (const auto& n : neighbours)
