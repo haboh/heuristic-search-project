@@ -1,6 +1,7 @@
 #include "GridView.h"
 
 #include <cassert>
+#include <numeric>
 
 namespace grid
 {
@@ -39,6 +40,11 @@ namespace grid
 
     Grid::Cost GridView::getCost(GridPoint point1, GridPoint point2) const
     {
+        if (occupied(point1) || occupied(point2))
+        {
+            return Grid::infinity_cost;
+        }
+
         return grid.getCost(point1, point2);
     }
 

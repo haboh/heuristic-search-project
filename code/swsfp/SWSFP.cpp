@@ -13,9 +13,7 @@ namespace unknownterrain
         grid::GridPoint start,
         const grid::GridPoint goal
     )
-    {        
-        const grid::Grid::Cost inifity_cost = std::numeric_limits<grid::Grid::Cost>::max() / 1000;
-
+    {
         std::map<grid::GridPoint, grid::Grid::Cost> rhs;
         std::map<grid::GridPoint, grid::Grid::Cost> d;
         std::set<std::pair<grid::Grid::Cost, grid::GridPoint>> inconsistentVertices;
@@ -26,14 +24,9 @@ namespace unknownterrain
                 rhs[point] = 0;
                 return;
             }
-            if (gridView.occupied(point))
-            {
-                rhs[point] = d[point] = inifity_cost;
-                return;
-            }
 
-            rhs[point] = inifity_cost;
-            for (const auto& n : gridView.getFreeNeighbours(point))
+            rhs[point] = grid::Grid::infinity_cost;
+            for (const auto& n : gridView.getNeighbours(point))
             {
                 rhs[point] = std::min(d[n] + gridView.getCost(point, n), rhs[point]);
             }
@@ -66,10 +59,6 @@ namespace unknownterrain
                 const auto [key, u] = *inconsistentVertices.begin();
 
                 inconsistentVertices.erase(inconsistentVertices.begin());
-                if (gridView.occupied(u))
-                {
-                    continue;
-                }
                 if (rhs[u] == d[u]) {
                     continue;
                 }
@@ -77,7 +66,7 @@ namespace unknownterrain
                     d[u] = rhs[u];
                 }
                 else {
-                    d[u] = inifity_cost;    
+                    d[u] = grid::Grid::infinity_cost;
                 }
                 updateNeigboursAndVertex(u);
             }
@@ -90,17 +79,16 @@ namespace unknownterrain
         {
             for (int j = 0; j < (int)gridView.getColumns(); ++j)
             {
-                rhs[grid::GridPoint{i, j}] = inifity_cost;
-                d[grid::GridPoint{i, j}] = inifity_cost;
+                rhs[grid::GridPoint{i, j}] = grid::Grid::infinity_cost;
+                d[grid::GridPoint{i, j}] = grid::Grid::infinity_cost;
             }
         }
 
         rhs[goal] = 0;
-        d[goal] = 0;
-        updateNeigboursAndVertex(goal);
+        inconsistentVertices.insert({computeKey(goal), goal});
         computePath();
 
-        if (d[start] == inifity_cost)
+        if (d[start] >= grid::Grid::infinity_cost)
         {
             return result::PathSearchResult{
                 .pathFound = false,
@@ -124,7 +112,10 @@ namespace unknownterrain
                 }
             }
             path.push_back(start);
-            gridView.observe(start);
+            for (const auto& n : gridView.observe(start))
+            {
+                updateNeigboursAndVertex(n);
+            }
             updateNeigboursAndVertex(start);
             computePath();
         }

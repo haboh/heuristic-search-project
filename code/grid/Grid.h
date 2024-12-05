@@ -5,6 +5,8 @@
 #include <array>
 #include <map>
 
+#include <numeric>
+
 namespace grid
 {
     struct GridPoint final
@@ -22,13 +24,15 @@ namespace grid
     {
     public:
         using Cost = long long;
+        static constexpr grid::Grid::Cost infinity_cost = std::numeric_limits<grid::Grid::Cost>::max() / 1000;
+
         using Field = std::vector<std::vector<bool>>; // true means occupied
 
         explicit Grid(const Field&);
 
         size_t getRows() const;
         size_t getColumns() const;
-        
+
         bool occupied(GridPoint) const;
         std::vector<GridPoint> getFreeNeighbours(GridPoint) const;
         std::vector<GridPoint> getNeighbours(GridPoint) const;

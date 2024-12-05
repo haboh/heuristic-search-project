@@ -17,9 +17,7 @@ namespace unknownterrain
         HeuristicFunc heuristicFunc
     )
     {
-        constexpr grid::Grid::Cost infinity_cost = std::numeric_limits<grid::Grid::Cost>::max() / 1000;
-        
-        grid::Grid::Cost km = 0;
+        grid::Grid::Cost km;
         std::map<grid::GridPoint, grid::Grid::Cost> rhs;
         std::map<grid::GridPoint, grid::Grid::Cost> g;
         std::set<std::pair<std::pair<grid::Grid::Cost, grid::Grid::Cost>, grid::GridPoint>> U;
@@ -28,15 +26,15 @@ namespace unknownterrain
         auto calculateKey = [&](const grid::GridPoint s){
             return std::make_pair
             (
-                std::min(g[s], rhs[s]) + heuristicFunc(start, s) + km, 
+                std::min(g[s], rhs[s]) + heuristicFunc(start, s) + km,
                 std::min(g[s], rhs[s])
             );
         };
 
         auto updateVertex = [&](const grid::GridPoint u) {
             if (u != goal) {
-                rhs[u] = infinity_cost;
-                for (const auto& n : grid.getFreeNeighbours(u))
+                rhs[u] = grid::Grid::infinity_cost;
+                for (const auto& n : grid.getNeighbours(u))
                 {
                     rhs[u] = std::min(rhs[u], g[n] + grid.getCost(u, n));
                 }
@@ -47,10 +45,10 @@ namespace unknownterrain
                 {
                     U.erase(std::make_pair(p, u));
                 }
-                UInvert[u].clear();  
+                UInvert[u].clear();
             }
 
-            
+
             if (g[u] != rhs[u]) {
                 U.insert(std::make_pair(calculateKey(u), u));
                 UInvert[u].insert(calculateKey(u));
@@ -63,10 +61,6 @@ namespace unknownterrain
                 const auto [kold, u] = *U.begin();
                 U.erase(U.begin());
                 UInvert[u].erase(kold);
-                if (grid.occupied(u))
-                {
-                    continue;
-                }
                 if (kold < calculateKey(u))
                 {
                     U.insert(std::make_pair(calculateKey(u), u));
@@ -75,29 +69,30 @@ namespace unknownterrain
                 else if (g[u] > rhs[u])
                 {
                     g[u] = rhs[u];
-                    for (const auto s : grid.getFreeNeighbours(u))
+                    for (const auto s : grid.getNeighbours(u))
                     {
                         updateVertex(s);
                     }
                 } else {
-                    g[u] = infinity_cost;
-                    for (const auto s : grid.getFreeNeighbours(u))
+                    g[u] = grid::Grid::infinity_cost;
+                    updateVertex(u);
+                    for (const auto s : grid.getNeighbours(u))
                     {
                         updateVertex(s);
                     }
-                    updateVertex(u);
                 }
             }
         };
 
         auto initialize = [&](){
             U.clear();
+            km = 0;
             for (int i = 0; i < (int)grid.getRows(); ++i)
             {
                 for (int j = 0; j < (int)grid.getColumns(); ++j)
                 {
-                    rhs[grid::GridPoint{i, j}] = infinity_cost;
-                    g[grid::GridPoint{i, j}] = infinity_cost;
+                    rhs[grid::GridPoint{i, j}] = grid::Grid::infinity_cost;
+                    g[grid::GridPoint{i, j}] = grid::Grid::infinity_cost;
                 }
             }
             rhs[goal] = 0;
@@ -105,20 +100,18 @@ namespace unknownterrain
             UInvert[goal].insert(calculateKey(goal));
         };
 
+
         result::Path path;
         path.push_back(start);
+
+        grid.observe(start);
 
         grid::GridPoint last = start;
         initialize();
         computeShortestPath();
-        std::ofstream of("out");
-        of << grid.getColumns() << " " << grid.getRows() << " " << grid.getRadius() << " "
-            << start.x << " " << start.y << " "
-            << goal.x << " " << goal.y
-            << std::endl;
         while (start != goal)
         {
-            if (g[start] >= infinity_cost)
+            if (g[start] >= grid::Grid::infinity_cost)
             {
                 return result::PathSearchResult{
                     .pathFound = false,
@@ -128,9 +121,10 @@ namespace unknownterrain
                     .openCount = 0,
                     .closedCount = 0
                 };
-            } 
+            }
 
             const auto& neigbours = grid.getFreeNeighbours(start);
+            assert(neigbours.size() > 0);
             grid::GridPoint newStart = neigbours.at(0);
             for (const auto s : neigbours)
             {
@@ -140,25 +134,24 @@ namespace unknownterrain
                 }
             }
             start = newStart;
-            of << newStart.y << " " << newStart.x;
             path.push_back(start);
             const auto changed = grid.observe(start);
+
             if (changed.size())
             {
                 km += heuristicFunc(last, start);
                 last = start;
                 for (const auto& v : changed)
                 {
-                    of << " " << v.y << " " << v.x;
                     updateVertex(v);
-                    for (const auto& n : grid.getFreeNeighbours(v))
+                    for (const auto& n : grid.getNeighbours(v))
                     {
                         updateVertex(n);
                     }
                 }
+                computeShortestPath();
             }
-            of << "\n";
-        }   
+        }
 
         return result::PathSearchResult{
             .pathFound = true,
