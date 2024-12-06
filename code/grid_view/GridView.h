@@ -16,6 +16,7 @@ namespace grid
         std::vector<GridPoint> getFreeNeighbours(GridPoint) const;
         std::vector<GridPoint> observe(GridPoint); // returns points that was updated (i.e. new walls)
         Grid::Cost getCost(GridPoint point1, GridPoint point2) const;
+        int getRadius() const;
 
     private:
         const Grid& grid;

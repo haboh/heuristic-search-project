@@ -36,6 +36,7 @@ namespace grid
     {
         return grid.getCost(point1, point2);
     }
+    
 
     std::vector<GridPoint> GridView::getFreeNeighbours(const GridPoint point) const
     {
@@ -48,6 +49,10 @@ namespace grid
             }
         }
         return freeNeighbours;
+    }
+
+    int GridView::getRadius() const {
+        return radius;
     }
 
     std::vector<GridPoint> GridView::observe(const GridPoint point)
