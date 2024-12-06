@@ -144,6 +144,7 @@ grid::Grid::Cost manhattan(grid::GridPoint point1, grid::GridPoint point2)
     return std::abs(point1.x - point2.x) + abs(point2.y - point1.y);
 }
 
+
 int main(int argc, char** argv)
 {
     if (argc < 2) {

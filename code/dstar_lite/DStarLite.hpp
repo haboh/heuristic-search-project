@@ -115,6 +115,25 @@ namespace unknownterrain
             UInvert[goal].insert(calculateKey(goal));
         };
 
+        auto tracePath = [&](){
+            std::vector<grid::GridPoint> tracedPath;
+            auto current = start;
+            while(current != goal) {
+                const auto& neigbours = grid.getFreeNeighbours(current);
+                assert(neigbours.size() > 0);
+                grid::GridPoint newStart = neigbours.at(0);
+                for (const auto s : neigbours)
+                {
+                    if (g[s] + grid.getCost(current, s) < g[newStart] + grid.getCost(current, newStart))
+                    {
+                        newStart = s;
+                    }
+                }
+                tracedPath.push_back(newStart);
+                current = newStart;
+            };
+            return tracedPath;
+        };
 
         result::Path path;
         path.push_back(start);
@@ -131,6 +150,7 @@ namespace unknownterrain
         result["start"] = start;
         result["goal"] = goal;
         std::vector<grid::GridPoint> allObstacles;
+        std::vector<grid::GridPoint> firstSeen;
         for (size_t y = 0; y < grid.getRows(); ++y) 
         {
             for (size_t x = 0; x < grid.getColumns(); ++x) 
@@ -140,12 +160,21 @@ namespace unknownterrain
                 {
                     allObstacles.push_back(point);
                 }
+                if (grid.occupied(point)) {
+                    firstSeen.push_back(point);
+                }
             }
         }
         result["all_obstacles"] = allObstacles;
 
         json steps = json::array();
 
+        json firstStep = json::object();
+        firstStep["pos"] = start;
+        firstStep["new_obstacles"] = firstSeen;
+        firstStep["expanded_now"] = latelyExpanded;
+        firstStep["predicted_path"] = tracePath();
+        steps.push_back(firstStep);
         while (start != goal)
         {
             json step = json::object();
@@ -172,8 +201,7 @@ namespace unknownterrain
                 }
             }
             start = newStart;
-            step["pos"]["x"] = newStart.y;
-            step["pos"]["y"] = newStart.x;
+            step["pos"] = newStart;
             path.push_back(start);
             const auto changed = grid.observe(start);
             json chng = json::array();
@@ -194,25 +222,7 @@ namespace unknownterrain
                 computeShortestPath();
             }
             step["expanded_now"] = latelyExpanded;
-            {
-                std::vector<grid::GridPoint> tracedPath;
-                auto current = start;
-                while(current != goal) {
-                    const auto& neigbours = grid.getFreeNeighbours(current);
-                    assert(neigbours.size() > 0);
-                    grid::GridPoint newStart = neigbours.at(0);
-                    for (const auto s : neigbours)
-                    {
-                        if (g[s] + grid.getCost(current, s) < g[newStart] + grid.getCost(current, newStart))
-                        {
-                            newStart = s;
-                        }
-                    }
-                    tracedPath.push_back(newStart);
-                    current = newStart;
-                }
-                step["predicted_path"] = tracedPath;
-            }
+            step["predicted_path"] = tracePath();
             step["new_obstacles"] = chng;
             steps.push_back(step);
         }
