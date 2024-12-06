@@ -1,3 +1,6 @@
 **/*.o
 main
 .cache/*
+output
+snaps/
+.idea

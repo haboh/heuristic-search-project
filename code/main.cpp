@@ -144,18 +144,27 @@ grid::Grid::Cost manhattan(grid::GridPoint point1, grid::GridPoint point2)
     return std::abs(point1.x - point2.x) + abs(point2.y - point1.y);
 }
 
-int main()
+int main(int argc, char** argv)
 {
-    const auto map = readMapFile("./data/arena.map");
-    const auto tasks = readTasksFromFile("./data/arena.map.scene");
+    if (argc < 2) {
+        std::cout << "Expected 2 args, got:" << argc << std::endl;
+        return -1;
+    }
+    std::string name = argv[1];
+    std::cout << "name is" << name << std::endl;
+    auto tasknum = std::stoi(argv[2]);
+    const auto map = readMapFile("./data/" + name + ".map");
+    const auto tasks = readTasksFromFile("./data/" + name + ".map.scen");
     grid::Grid grid(map);
-
+    auto task = tasks[tasknum];
+    auto outputFilename = "output/" + name + "-" + std::to_string(tasknum) + ".json";
     // const auto res = unknownterrain::AStarReplanning::findShortestPath(grid::GridView(grid, 2), grid::GridPoint{10, 10}, grid::GridPoint{20, 20}, manhattan);
-    const auto res = unknownterrain::SWSFP::findShortestPath(grid::GridView(grid, 4), grid::GridPoint{10, 10}, grid::GridPoint{40, 35});
-    // const auto res = unknownterrain::DStarLite::findShortestPath(grid::GridView(grid, 5), grid::GridPoint{10, 10}, grid::GridPoint{17, 20}, manhattan);
+    // const auto res = unknownterrain::SWSFP::findShortestPath(grid::GridView(grid, 4), grid::GridPoint{10, 10}, grid::GridPoint{40, 35});
+    const auto res = unknownterrain::DStarLite::findShortestPath(grid::GridView(grid, 5), grid::GridPoint{task.start.y, task.start.x}, grid::GridPoint{task.goal.y, task.goal.x}, manhattan, outputFilename);
+
 
     assert(res.pathFound);
     result::validatePath(res.path, grid);
-    displayPath(map, res.path);
+    // displayPath(map, res.path);
     return 0;
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "GridView.h"
 
 #include "PathSearchResult.h"
@@ -15,7 +16,8 @@ namespace unknownterrain
             grid::GridView grid,
             grid::GridPoint start,
             grid::GridPoint goal,
-            HeuristicFunc heuristicFunc
+            HeuristicFunc heuristicFunc,
+            std::string output_name
         );
     };
 }

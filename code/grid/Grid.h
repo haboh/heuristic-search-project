@@ -38,6 +38,7 @@ namespace grid
         std::vector<GridPoint> getNeighbours(GridPoint) const;
         bool validGridPoint(GridPoint) const;
         Cost getCost(GridPoint, GridPoint) const;
+        const Field& field; // const means ok to be public
 
     private:
         const std::vector<GridPoint> possibleMoves = {
@@ -47,6 +48,5 @@ namespace grid
             GridPoint{-1, 0}
         };
 
-        const Field& field;
     };
 }

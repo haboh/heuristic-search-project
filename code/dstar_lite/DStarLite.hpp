@@ -1,10 +1,22 @@
 #pragma once
 
 #include "DStarLite.h"
-
+#include "Grid.h"
+#include "json.hpp"
 #include <fstream>
 #include <numeric>
 #include <set>
+#include <string>
+
+using json = nlohmann::json;
+
+namespace grid {
+    void to_json(json& j, const grid::GridPoint& p) 
+    {
+        j = json{{"x", p.y}, {"y", p.x}};
+    }
+    }
+
 
 namespace unknownterrain
 {
@@ -14,7 +26,8 @@ namespace unknownterrain
         grid::GridView grid,
         grid::GridPoint start,
         const grid::GridPoint goal,
-        HeuristicFunc heuristicFunc
+        HeuristicFunc heuristicFunc,
+        std::string output_name
     )
     {
         grid::Grid::Cost km;
@@ -54,13 +67,15 @@ namespace unknownterrain
                 UInvert[u].insert(calculateKey(u));
             }
         };
-
+        std::vector<grid::GridPoint> latelyExpanded;
         auto computeShortestPath = [&]() {
+            latelyExpanded.clear();
             while (U.begin()->first < calculateKey(start) || rhs[start] != g[start])
             {
                 const auto [kold, u] = *U.begin();
                 U.erase(U.begin());
                 UInvert[u].erase(kold);
+                latelyExpanded.push_back(u);
                 if (kold < calculateKey(u))
                 {
                     U.insert(std::make_pair(calculateKey(u), u));
@@ -109,8 +124,31 @@ namespace unknownterrain
         grid::GridPoint last = start;
         initialize();
         computeShortestPath();
+        json result = json::object();
+        result["columns"] = grid.getColumns();
+        result["rows"] = grid.getRows();
+        result["radius"] = grid.getRadius();
+        result["start"] = start;
+        result["goal"] = goal;
+        std::vector<grid::GridPoint> allObstacles;
+        for (size_t y = 0; y < grid.getRows(); ++y) 
+        {
+            for (size_t x = 0; x < grid.getColumns(); ++x) 
+            {
+                auto point = grid::GridPoint(y, x);
+                if (grid.grid.occupied(point)) 
+                {
+                    allObstacles.push_back(point);
+                }
+            }
+        }
+        result["all_obstacles"] = allObstacles;
+
+        json steps = json::array();
+
         while (start != goal)
         {
+            json step = json::object();
             if (g[start] >= grid::Grid::infinity_cost)
             {
                 return result::PathSearchResult{
@@ -134,15 +172,19 @@ namespace unknownterrain
                 }
             }
             start = newStart;
+            step["pos"]["x"] = newStart.y;
+            step["pos"]["y"] = newStart.x;
             path.push_back(start);
             const auto changed = grid.observe(start);
-
+            json chng = json::array();
+            latelyExpanded.clear();
             if (changed.size())
             {
                 km += heuristicFunc(last, start);
                 last = start;
                 for (const auto& v : changed)
                 {
+                    chng.push_back({ {"x", v.y}, {"y", v.x} });
                     updateVertex(v);
                     for (const auto& n : grid.getNeighbours(v))
                     {
@@ -151,7 +193,32 @@ namespace unknownterrain
                 }
                 computeShortestPath();
             }
+            step["expanded_now"] = latelyExpanded;
+            {
+                std::vector<grid::GridPoint> tracedPath;
+                auto current = start;
+                while(current != goal) {
+                    const auto& neigbours = grid.getFreeNeighbours(current);
+                    assert(neigbours.size() > 0);
+                    grid::GridPoint newStart = neigbours.at(0);
+                    for (const auto s : neigbours)
+                    {
+                        if (g[s] + grid.getCost(current, s) < g[newStart] + grid.getCost(current, newStart))
+                        {
+                            newStart = s;
+                        }
+                    }
+                    tracedPath.push_back(newStart);
+                    current = newStart;
+                }
+                step["predicted_path"] = tracedPath;
+            }
+            step["new_obstacles"] = chng;
+            steps.push_back(step);
         }
+        result["steps"] = steps;
+        std::ofstream ofjson(output_name);
+        ofjson << result.dump(4);
 
         return result::PathSearchResult{
             .pathFound = true,

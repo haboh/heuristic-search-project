@@ -18,11 +18,6 @@ namespace grid
         return grid.getRows();
     }
 
-    size_t GridView::getRadius() const
-    {
-        return radius;
-    }
-
     size_t GridView::getColumns() const
     {
         return grid.getColumns();

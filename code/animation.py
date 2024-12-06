@@ -1,5 +1,6 @@
 from collections import namedtuple
 from typing import List
+import json
 
 from PIL import ImageDraw
 from PIL.Image import Image, new
@@ -9,7 +10,7 @@ from urllib.request import urlopen
 from PIL import Image
 from PIL import ImageDraw
 
-
+input_filename = "output/den401d-700.json"
 point = namedtuple("point", "x y")
 
 def save_animation(images, output_filename, quality):
@@ -23,15 +24,30 @@ def save_animation(images, output_filename, quality):
         loop=0,
     )
 
+def draw_all_obstacles(img: ImageDraw, all_obstacles: List[point], scale: int):
+    overlay = Image.new('RGBA', img.size, (255, 255, 255, 0))
+    draw_obj = ImageDraw.Draw(overlay)
+    for obstacle in all_obstacles:
+        draw_cell(draw_obj, obstacle, scale, color=(70, 80, 80, 60))
+    return overlay
 
-def draw_grid(draw_obj: ImageDraw, obstacles: List[point], scale: int):
+def draw_just_expanded(img: ImageDraw, just_expanded: List[point], scale: int):
+    overlay = Image.new('RGBA', img.size, (255, 255, 255, 0))
+    draw_obj = ImageDraw.Draw(overlay)
+    for obstacle in just_expanded:
+        draw_cell(draw_obj, obstacle, scale, color=(255, 100, 0, 150))
+    return overlay
+
+
+def draw_known_obstacles(draw_obj: ImageDraw, obstacles: List[point], scale: int):
     for obstacle in obstacles:
-        row = obstacle.y
-        col = obstacle.x
-        top_left = (col * scale, row * scale)
-        bottom_right = ((col + 1) * scale - 1, (row + 1) * scale - 1)
-        draw_obj.rectangle(
-            [top_left, bottom_right], fill=(70, 80, 80, 255), width=0.0
+        draw_cell(draw_obj, obstacle, scale, color=(70, 80, 80, 255))
+
+def draw_predicted_path(draw_obj: ImageDraw, predicted_path: List[point], scale: int):
+    for substep in predicted_path:
+        center = (substep.x * scale + 0.5 * scale, substep.y * scale + 0.5 * scale)
+        draw_obj.circle(
+            radius=scale / 5, xy=center, fill=(255, 255, 255, 255), width=0.0
         )
 
 def draw_cell(draw_obj: ImageDraw, p: point, scale: int, color):
@@ -44,16 +60,14 @@ def draw_cell(draw_obj: ImageDraw, p: point, scale: int, color):
     )
 
 def draw_agent(draw_obj: ImageDraw, agent: point, scale: int):
-    row = agent.y
-    col = agent.x
-    center = (col * scale + 0.5 * scale, row * scale + 0.5 * scale)
+    center = (agent.x * scale + 0.5 * scale, agent.y * scale + 0.5 * scale)
     draw_obj.circle(
         radius=scale / 2, xy=center, fill=(255, 00, 00, 255), width=0.0
     )
 
 def draw_visible_area(img, agent: point, visible_radius: int, scale: int):
     overlay = Image.new('RGBA', img.size, (255, 255, 255, 0))
-    draw_obj = ImageDraw.Draw(overlay)  # Create a context for drawing things on it.
+    draw_obj = ImageDraw.Draw(overlay)
     row = agent.y
     col = agent.x
     top_left = ((col - visible_radius + 1) * scale, (row - visible_radius + 1) * scale)
@@ -64,39 +78,52 @@ def draw_visible_area(img, agent: point, visible_radius: int, scale: int):
     return overlay
 
 
+dstar_data = json.load(open(input_filename))
+
 steps = []
-with open("out") as f:
-    lines = f.readlines()
-for line in lines[1:1000]:
-    tokens = list(map(int, line.split()))
-    pos = point(tokens[0], tokens[1])
+for json_step in dstar_data["steps"]:
+    pos = point(json_step["pos"]["x"], json_step["pos"]["y"])
     new_obstacles = []
-    for i in range(2, len(tokens), 2):
-        new_obstacles.append(point(tokens[i], tokens[i + 1]))
-    print(pos, new_obstacles)
-    steps.append((pos, new_obstacles))
+    for obstacle in json_step["new_obstacles"]:
+        new_obstacles.append(point(obstacle["x"], obstacle["y"]))
+    predicted_steps = [ point(substep["x"], substep["y"]) for substep in json_step["predicted_path"] ]
+    expanded_now = [ point(substep["x"], substep["y"]) for substep in json_step["expanded_now"] ]
+    steps.append((pos, new_obstacles, predicted_steps, expanded_now))
 
 
-width, height, visible_radius, start_x, start_y, goal_x, goal_y = list(map(int, lines[0].split()))
+
+width = dstar_data['columns']
+height = dstar_data['rows']
+visible_radius = dstar_data['radius']
+start_x, start_y = dstar_data['start']['x'], dstar_data['start']['y']
+goal_x, goal_y = dstar_data['goal']['x'], dstar_data['goal']['y']
+all_obstacles = [point(json_point['x'], json_point['y']) for json_point in dstar_data["all_obstacles"] ]
 scale = 10
 
-obstacles = []
+known_obstacles = []
 frames = []
 for i, step in enumerate(steps):
     im = new("RGBA", (width * scale, height * scale), color=(234, 237, 237, 255))
     draw = ImageDraw.Draw(im, "RGBA")
     agent_pos = step[0]
     new_obstacles = step[1]
-    obstacles += new_obstacles
-    print(obstacles)
+    predicted_path = step[2]
+    known_obstacles += new_obstacles
+
     draw_cell(draw, point(start_x, start_y),  scale, (0, 200, 0))
     draw_cell(draw, point(goal_x, goal_y),  scale, (0, 255, 0))
-    draw_grid(draw, obstacles, scale)
+    draw_known_obstacles(draw, known_obstacles, scale)
+    draw_predicted_path(draw, predicted_path, scale)
     draw_agent(draw, agent_pos, scale)
     overlay = draw_visible_area(im, agent_pos, visible_radius, scale)
     im = Image.alpha_composite(im, overlay)
+    all_obstacles_overlay = draw_all_obstacles(im, all_obstacles, scale)
+    im = Image.alpha_composite(im, all_obstacles_overlay)
+    just_expanded = step[3]
+    just_expanded_overlay = draw_just_expanded(im, just_expanded, scale)
+    im = Image.alpha_composite(im, just_expanded_overlay)
     if new_obstacles:
         im.save(f"snaps/out{i}.png")
     frames.append(im)
 
-save_animation(frames, "anim", 1)
+save_animation(frames, input_filename + '.gif', 1)
