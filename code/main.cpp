@@ -131,7 +131,7 @@ void displayPath(const Field& grid, const result::Path& path)
 void displayTasks(std::string filename) {
     auto tasks = readTasksFromFile(filename);
     for (auto task: tasks) {
-        std::cout << "task bucket=" << task.bucket 
+        std::cout << "task bucket=" << task.bucket
             << " from (" <<task.start.x << ", " << task.start.y << ")"
             << " to (" << task.goal.x << ", " << task.goal.y << ")" << std::endl;
     }
@@ -149,10 +149,10 @@ int main()
     const auto map = readMapFile("./data/arena.map");
     const auto tasks = readTasksFromFile("./data/arena.map.scene");
     grid::Grid grid(map);
-    
+
     // const auto res = unknownterrain::AStarReplanning::findShortestPath(grid::GridView(grid, 2), grid::GridPoint{10, 10}, grid::GridPoint{20, 20}, manhattan);
-    // const auto res = unknownterrain::SWSFP::findShortestPath(grid::GridView(grid, 2), grid::GridPoint{10, 10}, grid::GridPoint{40, 35});
-    const auto res = unknownterrain::DStarLite::findShortestPath(grid::GridView(grid, 5), grid::GridPoint{10, 10}, grid::GridPoint{30, 30}, manhattan);
+    const auto res = unknownterrain::SWSFP::findShortestPath(grid::GridView(grid, 4), grid::GridPoint{10, 10}, grid::GridPoint{40, 35});
+    // const auto res = unknownterrain::DStarLite::findShortestPath(grid::GridView(grid, 5), grid::GridPoint{10, 10}, grid::GridPoint{17, 20}, manhattan);
 
     assert(res.pathFound);
     result::validatePath(res.path, grid);

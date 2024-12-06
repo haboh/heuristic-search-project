@@ -1,6 +1,7 @@
 #include "GridView.h"
 
 #include <cassert>
+#include <numeric>
 
 namespace grid
 {
@@ -15,6 +16,11 @@ namespace grid
     size_t GridView::getRows() const
     {
         return grid.getRows();
+    }
+
+    size_t GridView::getRadius() const
+    {
+        return radius;
     }
 
     size_t GridView::getColumns() const
@@ -34,9 +40,19 @@ namespace grid
 
     Grid::Cost GridView::getCost(GridPoint point1, GridPoint point2) const
     {
+        if (occupied(point1) || occupied(point2))
+        {
+            return Grid::infinity_cost;
+        }
+
         return grid.getCost(point1, point2);
     }
     
+
+    std::vector<GridPoint> GridView::getNeighbours(const GridPoint point) const
+    {
+        return grid.getNeighbours(point);
+    }
 
     std::vector<GridPoint> GridView::getFreeNeighbours(const GridPoint point) const
     {
