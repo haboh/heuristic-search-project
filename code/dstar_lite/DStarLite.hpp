@@ -227,6 +227,7 @@ namespace unknownterrain
             steps.push_back(step);
         }
         result["steps"] = steps;
+        result["path"] = path;
         std::ofstream ofjson(output_name);
         ofjson << result.dump(4);
 

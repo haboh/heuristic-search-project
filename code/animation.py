@@ -10,13 +10,16 @@ from PIL import ImageDraw
 point = namedtuple("point", "x y")
 
 
-def save_animation(images, output_filename, quality):
+def save_animation(images, output_filename):
+    n = len(images)
+    max_runtime_secs = 20
+    duration = min(200, max_runtime_secs * 1000 // n)
     images[0].save(
         output_filename,
         save_all=True,
         append_images=images[1:],
         optimize=False,
-        duration=200,
+        duration=duration,
         loop=0,
     )
 
@@ -127,17 +130,56 @@ def create_animation(dstar_data: json, output_name: str):
             im.save(f"snaps/out{i}.png")
         frames.append(im)
 
-    save_animation(frames, output_name, 1)
+    save_animation(frames, output_name)
+
+def display_path(dstar_data: json, output_name: str):
+    width = dstar_data['columns']
+    height = dstar_data['rows']
+    start_x, start_y = dstar_data['start']['x'], dstar_data['start']['y']
+    goal_x, goal_y = dstar_data['goal']['x'], dstar_data['goal']['y']
+    path = [point(json_point['x'], json_point['y']) for json_point in dstar_data["path"]]
+    all_obstacles = [point(json_point['x'], json_point['y']) for json_point in dstar_data["all_obstacles"]]
+    scale = 10
+
+    im = new("RGBA", (width * scale, height * scale), color=(234, 237, 237, 255))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    draw_known_obstacles(draw, all_obstacles, scale)
+    for p in path:
+        draw_cell(draw, p, scale, (255, 0, 0))
+
+    draw_cell(draw, point(start_x, start_y), scale, (0, 200, 0))
+    draw_cell(draw, point(goal_x, goal_y), scale, (0, 255, 0))
+    im.save(output_name, format="PNG")
+
+
 
 
 # subprocess.run(['make', f'run', f'{run_name}',  f'{task_num}'])
-def run(run_name: str, tasknum: int):
+def run(run_name: str, tasknum: int, radius: int, output_folder: str, animation: bool = True, show: bool = False, write_path: bool = False):
+    from pathlib import Path
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
     subprocess.run(['make', 'all'])
-    subprocess.run(['output/main', str(run_name), str(tasknum)])
+    subprocess.run(['output/main', str(run_name), str(tasknum), str(radius)])
     input_filename = f'output/{run_name}-{tasknum}.json'
     dstar_data = json.load(open(input_filename))
-    output_gif_name = input_filename + ".gif"
-    create_animation(dstar_data, output_gif_name)
-    subprocess.run(['xviewer', output_gif_name])
+    if animation:
+        output_gif_name = output_folder + f"/{run_name}-{tasknum}.gif"
+        create_animation(dstar_data, output_gif_name)
+        if show:
+            subprocess.run(['xviewer', output_gif_name])
+    if write_path:
+        display_path(dstar_data, output_folder + f"/{run_name}-{tasknum}.png")
 
-run("den401d", 45)
+
+task = namedtuple("task", "run_name begin end step radius")
+tasks = [
+    task("den401d", 300, 700, 50, 10),
+    task("NewYork_1_256", 400, 550, 50, 20),
+    task("brc504d", 100, 350, 50, 10),
+]
+for task in tasks:
+    for i in range(task.begin, task.end, task.step):
+        run(task.run_name, i, task.radius, 'output/' + task.run_name, animation=False, write_path=True)
+        print(f'executed {task.run_name}-{i}')
+# run("den401d", 45, 10)

@@ -154,6 +154,10 @@ int main(int argc, char** argv)
     std::string name = argv[1];
     std::cout << "name is" << name << std::endl;
     auto tasknum = std::stoi(argv[2]);
+    auto radius = 5;
+    if (argc >= 3) {
+        radius = std::stoi(argv[3]);
+    }
     const auto map = readMapFile("./data/" + name + ".map");
     const auto tasks = readTasksFromFile("./data/" + name + ".map.scen");
     grid::Grid grid(map);
@@ -161,7 +165,7 @@ int main(int argc, char** argv)
     auto outputFilename = "output/" + name + "-" + std::to_string(tasknum) + ".json";
     // const auto res = unknownterrain::AStarReplanning::findShortestPath(grid::GridView(grid, 2), grid::GridPoint{10, 10}, grid::GridPoint{20, 20}, manhattan);
     // const auto res = unknownterrain::SWSFP::findShortestPath(grid::GridView(grid, 4), grid::GridPoint{10, 10}, grid::GridPoint{40, 35});
-    const auto res = unknownterrain::DStarLite::findShortestPath(grid::GridView(grid, 5), grid::GridPoint{task.start.y, task.start.x}, grid::GridPoint{task.goal.y, task.goal.x}, manhattan, outputFilename);
+    const auto res = unknownterrain::DStarLite::findShortestPath(grid::GridView(grid, radius), grid::GridPoint{task.start.y, task.start.x}, grid::GridPoint{task.goal.y, task.goal.x}, manhattan, outputFilename);
 
 
     assert(res.pathFound);
