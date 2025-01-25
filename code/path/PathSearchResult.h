@@ -14,6 +14,8 @@ namespace result
         size_t searchTreeSize;
         size_t openCount;
         size_t closedCount;
+        size_t vertexAccesses = -1;
+        size_t priorityQueueAccesses = -1;
     };
 
     bool validatePath(const Path&, const grid::Grid&);

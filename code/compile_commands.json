@@ -11,18 +11,19 @@
       "-Iswsfp",
       "-I",
       "dstar_lite",
+      "-Iargparse",
       "-g",
       "-O2",
       "-std=c++20",
       "-Wall",
       "-Werror",
       "-o",
-      "main",
+      "output/main",
       "swsfp/SWSFP.cpp"
     ],
     "directory": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code",
     "file": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/swsfp/SWSFP.cpp",
-    "output": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/main"
+    "output": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/output/main"
   },
   {
     "arguments": [
@@ -36,18 +37,19 @@
       "-Iswsfp",
       "-I",
       "dstar_lite",
+      "-Iargparse",
       "-g",
       "-O2",
       "-std=c++20",
       "-Wall",
       "-Werror",
       "-o",
-      "main",
+      "output/main",
       "grid/Grid.cpp"
     ],
     "directory": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code",
     "file": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/grid/Grid.cpp",
-    "output": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/main"
+    "output": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/output/main"
   },
   {
     "arguments": [
@@ -61,18 +63,19 @@
       "-Iswsfp",
       "-I",
       "dstar_lite",
+      "-Iargparse",
       "-g",
       "-O2",
       "-std=c++20",
       "-Wall",
       "-Werror",
       "-o",
-      "main",
+      "output/main",
       "grid_view/GridView.cpp"
     ],
     "directory": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code",
     "file": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/grid_view/GridView.cpp",
-    "output": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/main"
+    "output": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/output/main"
   },
   {
     "arguments": [
@@ -86,18 +89,19 @@
       "-Iswsfp",
       "-I",
       "dstar_lite",
+      "-Iargparse",
       "-g",
       "-O2",
       "-std=c++20",
       "-Wall",
       "-Werror",
       "-o",
-      "main",
+      "output/main",
       "path/PathSearchResult.cpp"
     ],
     "directory": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code",
     "file": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/path/PathSearchResult.cpp",
-    "output": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/main"
+    "output": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/output/main"
   },
   {
     "arguments": [
@@ -111,17 +115,18 @@
       "-Iswsfp",
       "-I",
       "dstar_lite",
+      "-Iargparse",
       "-g",
       "-O2",
       "-std=c++20",
       "-Wall",
       "-Werror",
       "-o",
-      "main",
+      "output/main",
       "main.cpp"
     ],
     "directory": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code",
     "file": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/main.cpp",
-    "output": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/main"
+    "output": "/home/metametamoon/university/heuristic-search/heuristic-search-project/code/output/main"
   }
 ]

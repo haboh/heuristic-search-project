@@ -17,7 +17,8 @@ namespace unknownterrain
             grid::GridPoint start,
             grid::GridPoint goal,
             HeuristicFunc heuristicFunc,
-            std::string output_name
+            std::string output_name,
+            bool needAnimation = false
         );
     };
 }

@@ -18,6 +18,9 @@ namespace unknownterrain
         result::Path path = {start};
         gridView.observe(start);
 
+        size_t vertexAccesses = 0;
+        size_t setAccesses = 0;
+
         size_t steps = 0;
         size_t searchTreeSize = 0;
         size_t openCount = 0;
@@ -31,6 +34,8 @@ namespace unknownterrain
             searchTreeSize += res.searchTreeSize;
             openCount += res.openCount;
             closedCount += res.closedCount;
+            vertexAccesses += res.vertexAccesses;
+            setAccesses += res.priorityQueueAccesses;
 
             if (not res.pathFound)
             {
@@ -63,7 +68,9 @@ namespace unknownterrain
             .steps = steps,
             .searchTreeSize = searchTreeSize,
             .openCount = openCount,
-            .closedCount = closedCount
+            .closedCount = closedCount,
+            .vertexAccesses = vertexAccesses,
+            .priorityQueueAccesses = setAccesses,
         };
     }
 }

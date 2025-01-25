@@ -17,6 +17,8 @@ namespace unknownterrain
         std::map<grid::GridPoint, grid::Grid::Cost> rhs;
         std::map<grid::GridPoint, grid::Grid::Cost> d;
         std::set<std::pair<grid::Grid::Cost, grid::GridPoint>> inconsistentVertices;
+        size_t vertexAccesses = 0;
+        size_t setAccesses = 0;
 
         const auto computeRHS = [&](grid::GridPoint point) {
             if (point == goal)
@@ -40,6 +42,7 @@ namespace unknownterrain
             if (rhs[point] != d[point])
             {
                 inconsistentVertices.insert({computeKey(point), point});
+                setAccesses += 1;
             }
         };
 
@@ -57,8 +60,9 @@ namespace unknownterrain
             while (inconsistentVertices.size())
             {
                 const auto [key, u] = *inconsistentVertices.begin();
-
                 inconsistentVertices.erase(inconsistentVertices.begin());
+                setAccesses += 1;
+                vertexAccesses += 1;
                 if (rhs[u] == d[u]) {
                     continue;
                 }
@@ -86,6 +90,7 @@ namespace unknownterrain
 
         rhs[goal] = 0;
         inconsistentVertices.insert({computeKey(goal), goal});
+        setAccesses += 1;
         computePath();
 
 
@@ -99,7 +104,9 @@ namespace unknownterrain
                     .steps = 0,
                     .searchTreeSize = 0,
                     .openCount = 0,
-                    .closedCount = 0
+                    .closedCount = 0,
+                    .vertexAccesses = vertexAccesses,
+                    .priorityQueueAccesses = setAccesses,
                 };
             }
 
@@ -127,7 +134,9 @@ namespace unknownterrain
             .steps = 0,
             .searchTreeSize = 0,
             .openCount = 0,
-            .closedCount = 0
+            .closedCount = 0,
+            .vertexAccesses = vertexAccesses,
+            .priorityQueueAccesses = setAccesses,
         };
     }
 }

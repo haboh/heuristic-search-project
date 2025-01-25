@@ -22,7 +22,7 @@ namespace astar
 
         struct compareNodes {
             bool operator() (const Node* node1, const Node* node2) const {
-                return (*node1) > (*node2);
+                return (*node1) < (*node2);
             }
         };
     }
@@ -36,16 +36,21 @@ namespace astar
         HeuristicFunc heuristicFunc
     )
     {
-        std::priority_queue<const Node*, std::vector<const Node*>, compareNodes> q;
-        q.push(new Node{.f = 0, .g = 0, .point = start, .parent = nullptr});
+        size_t vertexAccesses = 0;
+        size_t setAccesses = 0;
+        // std::priority_queue<const Node*, std::vector<const Node*>, compareNodes> q;
+        std::set<const Node*, compareNodes> q;
+        q.insert(new Node{.f = 0, .g = 0, .point = start, .parent = nullptr});
+        setAccesses += 1;
         std::set<grid::GridPoint> expanded;
 
         const Node* finalNode = nullptr;
 
         while (q.size())
         {
-            const Node& best = *q.top();
-            q.pop();
+            const Node& best = **q.begin();
+            q.erase(q.begin());
+            setAccesses += 1;
 
             if (expanded.count(best.point))
             {
@@ -58,17 +63,19 @@ namespace astar
                 break;
             }
             expanded.insert(best.point);
+            vertexAccesses += 1;
 
             for (const auto neighbour : grid.getFreeNeighbours(best.point))
             {
                 const grid::Grid::Cost gvalue = best.g + grid.getCost(best.point, neighbour);
 
-                q.push(new Node{
+                q.insert(new Node{
                     .f = gvalue + heuristicFunc(neighbour, goal),
                     .g = gvalue,
                     .point = neighbour,
                     .parent = &best
                 });
+                setAccesses += 1;
             }
         }
 
@@ -89,6 +96,8 @@ namespace astar
         result.closedCount = expanded.size();
         result.openCount = q.size();
         result.searchTreeSize = expanded.size() + q.size();
+        result.priorityQueueAccesses = setAccesses;
+        result.vertexAccesses = vertexAccesses;
         return result;
     }
 }
