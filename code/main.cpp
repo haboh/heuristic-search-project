@@ -168,6 +168,7 @@ int main(int argc, char **argv) {
       .help("one of: astar, dstarlite, dynswsffp");
   program.add_argument("--search-result-output")
       .default_value("./output/search-result.json");
+  program.add_argument("--display-path").default_value(false).flag();
   try {
     program.parse_args(argc, argv);
   } catch (const std::exception &err) {
@@ -183,11 +184,7 @@ int main(int argc, char **argv) {
   const auto radius = program.get<int>("--radius");
   const auto mapPath = program.get<std::string>("--map");
   const auto algorithm = program.get<std::string>("--algorithm");
-
-  std::cout << "map is" << mapPath << std::endl;
-  std::cout << "radius is" << radius << std::endl;
-  std::cout << "positions" << begin_x << " " << begin_y << " " << end_x << "  "
-            << end_y << std::endl;
+  const auto needDisplayPath = program.get<bool>("--display-path");
 
   const auto map = readMapFile(mapPath);
   grid::Grid grid(map);
@@ -211,7 +208,7 @@ int main(int argc, char **argv) {
   std::chrono::duration<double, std::milli> durationMs = t2 - t1;
 
   assert(pathSearchResult.pathFound);
-  result::validatePath(pathSearchResult.path, grid);
+  bool isValidPath = result::validatePath(pathSearchResult.path, grid);
 
   auto jsonPathSearchResult = json::object();
   jsonPathSearchResult["algorithm"] = algorithm;
@@ -220,11 +217,13 @@ int main(int argc, char **argv) {
   jsonPathSearchResult["array_accesses"] =
       pathSearchResult.priorityQueueAccesses;
   jsonPathSearchResult["path_length"] = pathSearchResult.path.size();
+  jsonPathSearchResult["is_valid_path"] = isValidPath;
   const auto searchResultPath =
       program.get<std::string>("--search-result-output");
-  std::cout << "output path: " << searchResultPath << std::endl;
   std::ofstream ofjson(searchResultPath);
   ofjson << jsonPathSearchResult.dump(4);
-  displayPath(map, pathSearchResult.path);
+  if (needDisplayPath) {
+    displayPath(map, pathSearchResult.path);
+  }
   return 0;
 }
