@@ -49,7 +49,7 @@
           &\qquad \fextract(\fplan(E_{new}, t_0)) = \mathtt{optpath}((V, E' \leftarrow E_{new}), s, d)
      \end{align*}
 
-     Мы будем применять алгоритм в следующей коде (который следует рассматривать как синтаксический сахар над машиной Тьюринга):
+     Мы будем применять алгоритм в следующем коде (который следует рассматривать как синтаксический сахар над машиной Тьюринга):
      \begin{verbatim}
 active_plan = empty
 for i in 1..n:
@@ -60,4 +60,36 @@ for i in 1..n:
      Несложно заметить, что функция $\fplan$, которая запускает поиск пути заново, используя из предыдущих своих итераций только информацию о весах ребер, тривиально удовлетворяет всем этим свойствам.
      Однако в случае, когда размер $E_{new}$ мал по сравнению с размером $E$, полное перевычисление кратчайшего пути оказывается избыточным.
      Мы бы хотели минимизировать число итераций алгоритма $\fplan$ и $\fextract$ в ходе исполнения псевдокода выше.
+
+
+
+\begin{verbatim}
+bool A*(start, goal):
+     U = {}
+     Q = {}
+     Q.push(start)
+     g[start] = 0
+     f[start] = g[start] + h(start)
+     while Q.size() != 0
+          current = Q.top() // vertex with minimal f-value
+          if current == goal
+               return true  // path found
+          Q.remove(current)
+          U.push(current)
+          for v : N(current)
+               // d(current, v) --- cost of passing from current to v
+               tentativeScore = g[current] + d(current, v)
+               if v in U and tentativeScore >= g[v]
+                    continue
+               if v in U or tentativeScore < g[v]
+                    parent[v] = current
+                    g[v] = tentativeScore
+                    f[v] = g[v] + h(v)
+                    if v in Q
+                         Q.push(v)
+     return false
+\end{verbatim}
+
+
+
 \end{document}
