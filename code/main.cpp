@@ -208,8 +208,6 @@ int main(int argc, char **argv) {
   std::chrono::duration<double, std::milli> durationMs = t2 - t1;
 
   assert(pathSearchResult.pathFound);
-  bool isValidPath = result::validatePath(pathSearchResult.path, grid);
-
   auto jsonPathSearchResult = json::object();
   jsonPathSearchResult["algorithm"] = algorithm;
   jsonPathSearchResult["time_millis"] = durationMs.count();
@@ -217,7 +215,6 @@ int main(int argc, char **argv) {
   jsonPathSearchResult["array_accesses"] =
       pathSearchResult.priorityQueueAccesses;
   jsonPathSearchResult["path_length"] = pathSearchResult.path.size();
-  jsonPathSearchResult["is_valid_path"] = isValidPath;
   const auto searchResultPath =
       program.get<std::string>("--search-result-output");
   std::ofstream ofjson(searchResultPath);

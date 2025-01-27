@@ -1,13 +1,15 @@
 from collections import namedtuple
+import json
 import subprocess
 from typing import List, Tuple
 from pathlib import Path
 import os
 import shutil
 from tqdm import tqdm
-
+import matplotlib.pyplot as plt
 Task = namedtuple('task', 'begin_x begin_y end_x end_y')
 
+benchmarks_folder = Path('.') / 'output' / 'benchmarks'
 
 def read_moving_ai_scene_file(path: Path) -> List[Tuple[int, Task]]:
     with open(path) as f:
@@ -48,26 +50,80 @@ def run(map_file: Path, task: Task, radius: float, algorithm: str, output_file: 
         + ['--map', str(map_file)]
         + ['--search-result-output', str(output_file)]
     )
-    print(' '.join(args))
-    subprocess.run(['output/main'] + args)
+    try:
+        result = subprocess.run(['output/main'] + args, timeout=300)
+        return result.returncode
+    except Exception:
+        return- 1 
 
+
+def create_comparative_plot(log_folder: Path, field: str, used_algorithms: List[str], output_path: Path,):
+    total_result = []
+    labels = []
+    for subfolder_name in used_algorithms:
+        folder = log_folder / subfolder_name
+        try:
+            folder_result = []
+            for file in os.listdir(folder):
+                try:
+                    with open(folder / file) as f:
+                        data = json.load(f)
+                        folder_result.append(data[field])
+                except Exception:
+                    pass
+            total_result.append(folder_result)
+            labels.append(subfolder_name)
+        except Exception:
+            pass
+    plt.boxplot(total_result, tick_labels=labels)
+    plt.savefig(str(output_path))
+    plt.close()
+    # plt.show()
+    return folder_result
+
+algorithms = 'dynswsffp', 'astar', 'dstarlite'
+benchmark_folder = Path('.') / 'output' / 'benchmarks'
+run_names = ['brc504d', 'den401d', 'NewYork_1_256', 'Labyrinth']
+# den401d is typical building room layoutm, NewYork --a typical city,  brc504d -- a typical maze-like
+radii = [5, 10, 15, 20, 50]
+
+def run_experiments():
+    subprocess.run(['make', 'all'])
+    for radius in radii:
+        for run_name in run_names:
+            print(f'working with radius={radius} run_name={run_name}')
+            run_folder = benchmark_folder / f'r{radius}' / run_name
+            scene_file = Path('.') / 'data' / f'{run_name}.map.scen'
+            map_file = Path('.') / 'data' / f'{run_name}.map'
+            step = 20 if run_name == 'Labyrinth' else 5
+            tasks = read_moving_ai_scene_file(scene_file)[::step]
+            # shutil.rmtree(benchmark_folder)
+            for algorithm in algorithms:
+                number = 0
+                print(algorithm)
+                if algorithm == 'dynswsffp' and radius <= 50 and run_name == 'Labyrinth':
+                    continue
+                for batch, task in tqdm(tasks):
+                    output_folder = run_folder / algorithm
+                    os.makedirs(output_folder, exist_ok=True)
+                    output_file = output_folder / f'n{number}.json'
+                    if not os.path.isfile(output_file):
+                        retcode = run(map_file, task, radius, algorithm, output_file)
+                        if retcode != 0:
+                            data = {}
+                            data['killed'] = True
+                            with open(output_file, 'w') as f:
+                                json.dump(data, f, ensure_ascii=False, indent=4)
+                    number += step
 
 if __name__ == '__main__':
-    subprocess.run(['make', 'all'])
-    run_name = 'arena'
-    scene_file = Path('.') / 'data' / f'{run_name}.map.scen'
-    map_file = Path('.') / 'data' / f'{run_name}.map'
-    step = 20
-    tasks = read_moving_ai_scene_file(scene_file)[::step][:10]
-    benchmark_folder = Path('.') / 'output' / 'benchmarks'
-    shutil.rmtree(benchmark_folder)
-    for algorithm in 'astar', 'dynswsffp', 'dstarlite':
-        number = 0
-        print(algorithm)
-        for batch, task in tqdm(tasks):
-            # print(batch, task, algorithm)
-            output_folder = benchmark_folder / run_name / algorithm
-            os.makedirs(output_folder, exist_ok=True)
-            output_file = output_folder / f'n={number} alg={algorithm}.json'
-            run(map_file, task, 5, algorithm, output_file)
-            number += step
+    run_experiments()
+    for radius in radii:
+        for run_name in run_names:
+            for used_algorithms in [algorithms, algorithms[1:]]: 
+                log_folder = benchmark_folder / f'r{radius}' / run_name
+                output_folder = Path('.') / 'output' / 'plots' / f'r{radius}'
+                os.makedirs(output_folder, exist_ok=True)
+                output_path = output_folder / f'{run_name}-{str(used_algorithms)}.pdf'
+                create_comparative_plot(log_folder, 'time_millis', used_algorithms, output_path)
+
