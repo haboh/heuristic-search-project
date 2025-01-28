@@ -180,6 +180,59 @@ while undet():
     \end{frame}
 
     \begin{frame}
+        \frametitle{Графики при малой видимости}
+        \begin{figure}
+            \centering
+            \begin{subfigure}[b]{0.49\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../figures/astar-to-dstarlite/r5-brc504d}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}[b]{0.49\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../figures/astar-to-dstarlite/r5-den401d}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}[b]{0.49\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../figures/astar-to-dstarlite/r5-NewYork_1_256}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}[b]{0.49\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../figures/astar-to-dstarlite/r5-Labyrinth}
+            \end{subfigure}
+        \end{figure}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Графики при большой видимости}
+        \begin{figure}
+            \centering
+            \begin{subfigure}[b]{0.49\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../figures/astar-to-dstarlite/r50-brc504d}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}[b]{0.49\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../figures/astar-to-dstarlite/r50-den401d}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}[b]{0.49\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../figures/astar-to-dstarlite/r50-NewYork_1_256}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}[b]{0.49\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../figures/astar-to-dstarlite/r50-Labyrinth}
+            \end{subfigure}
+        \end{figure}
+    \end{frame}
+
+
+    \begin{frame}
         \frametitle{Результаты производительности (мс)}
         Низкая видимость (радиус 5)
 
@@ -208,12 +261,9 @@ while undet():
 
     \end{frame}
 
+    \newcommand{\dstarlite}{\(D^*\ lite\)\,}
     \begin{frame}
-        \frametitle{План работ}
-        \begin{itemize}
-            \item До 2 декабря --- написать кодовую основу для всего; преимущественно Максим
-            \item До 16 декабря --- провести эксперименты и подготовить отчёт; преимущественно Лев
-        \end{itemize}
+        \frametitle{Заключение}
     \end{frame}
 \end{document}
 
