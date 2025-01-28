@@ -169,6 +169,7 @@ int main(int argc, char **argv) {
   program.add_argument("--search-result-output")
       .default_value("./output/search-result.json");
   program.add_argument("--display-path").default_value(false).flag();
+  program.add_argument("--animation-data-path").default_value("none");
   try {
     program.parse_args(argc, argv);
   } catch (const std::exception &err) {
@@ -185,6 +186,7 @@ int main(int argc, char **argv) {
   const auto mapPath = program.get<std::string>("--map");
   const auto algorithm = program.get<std::string>("--algorithm");
   const auto needDisplayPath = program.get<bool>("--display-path");
+  const auto animationDataPath = program.get<std::string>("--animation");
 
   const auto map = readMapFile(mapPath);
   grid::Grid grid(map);
@@ -193,6 +195,14 @@ int main(int argc, char **argv) {
     auto gridView = grid::GridView(grid, radius);
     auto begin = grid::GridPoint{begin_x, begin_y};
     auto end = grid::GridPoint{end_x, end_y};
+    if (animationDataPath != "none") {
+      if (algorithm == "dstarlite") {
+        return unknownterrain::DStarLite::findShortestPathWithAnimation(
+            gridView, begin, end, manhattan, "output/mytest");
+      } else {
+        throw std::runtime_error("animation supported only with dstarlite");
+      }
+    }
     if (algorithm == "dstarlite") {
       return unknownterrain::DStarLite::findShortestPath(
           gridView, begin, end, manhattan, "output/mytest");

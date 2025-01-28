@@ -8,6 +8,8 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{subcaption}
+\usepackage{mathtools} % for :=
+\usepackage{movie15}
 
 \usetikzlibrary{shapes,snakes}
 
@@ -44,9 +46,18 @@
 
     \begin{frame}[fragile]
         \frametitle{Неформальная постановка задачи}
-        \begin{center}
-            \includegraphics[height=5cm]{../figures/dstar8cells}
-        \end{center}
+        \begin{verbatim}
+g, start, goal = init_graph()
+while undet():
+    updates = receive_updated_edges_w()
+    replan_shortest_path( # LPA*
+        start,
+        goal,
+        g,
+        updates,
+        h)
+# нет шага step
+        \end{verbatim}
     \end{frame}
 
     \begin{frame}[fragile]
@@ -128,7 +139,7 @@
                           0 &  v = s\\
                           \displaystyle \min_{v' \in neighbors(v)} (w(v, v') + g^*(v')) \\
             \end{cases} \\
-            &rhs(v) = \min_{v' \in neighbors(v)} (w(v, v') + g(v')) \\ \\
+            &rhs(v) \coloneq \min_{v' \in neighbors(v)} (w(v, v') + g(v')) \\ \\
             &rhs(v) = g(v)\ \forall v \in V \leftrightarrow g(v) = g^*(v)
         \end{align*}
         \begin{itemize}
@@ -136,21 +147,12 @@
         \end{itemize}
 
 
-
     \end{frame}
     \begin{frame}[fragile]
         \frametitle{Алгоритм D* lite}
-        \begin{verbatim}
-g = init_graph()
-while !agent.at_goal():
-updates = receive_updated_edges_w()
-replan_path(goal
-    agent.pos
-    g
-    updates
-    h) # LPA*
-agent.step()
-        \end{verbatim}
+        \begin{center}
+            \includegraphics[height=.75\textheight]{../figures/dstar8cells}
+        \end{center}
 
     \end{frame}
 
@@ -178,27 +180,31 @@ agent.step()
     \end{frame}
 
     \begin{frame}
-        \frametitle{Ожидаемые результаты}
-        Время работы (у.е.):
-        \begin{table}[]
-            \begin{tabular}{lllll}
-                & Лабиринт & Помещение & Улица & \\
-                A**             & $100x$   & $20y$     & $20z$ & \\
-                Dynamic SWSF-FP & $2x$     & $2y$      & $2z$  & \\
-                D* lite         & $x$      & $y$       & $z$   &
-            \end{tabular}
-        \end{table}
+        \frametitle{Результаты производительности (мс)}
+        Низкая видимость (радиус 5)
 
-        Память (у.е.):
-        \begin{table}[]
-            \begin{tabular}{lllll}
-                & Лабиринт & Помещение & Улица & \\
-                A**             & $2x$     & $2y$      & $2z$  & \\
-                Dynamic SWSF-FP & $x$      & $y$       & $z$   & \\
-                D* lite         & $2x$     & $2y$      & $2z$  &
-            \end{tabular}
-        \end{table}
+        \begin{tabular}{lllll}
+            \hline
+            & brc504d     & den401d     & NewYork     & Labyrinth   \\
+            \hline
+            swsffp  & 1.4e4±3.2e4 & 4.9e2±7.3e2 & 1.1e3±2.8e3 & NA          \\
+            a*      & 5.8e2±1.5e3 & 5.2e1±1.5e2 & 1.5e2±4.6e2 & 2.3e4±6.1e4 \\
+            d* lite & 3.3e2±4.7e2 & 5.8e1±8.6e1 & 1.3e2±2.3e2 & 3.0e3±4.6e3 \\
+            \hline
+        \end{tabular}
 
+        \bigskip
+        Высокая видимость (радиус 50)
+
+        \begin{tabular}{lllll}
+            \hline
+            & brc504d     & den401d     & NewYork     & Labyrinth   \\
+            \hline
+            swsffp & 1.4e4±2.3e4 & 8.6e2±1.1e3 & 2.5e3±3.4e3 & NA          \\
+            astar  & 6.9e1±1.3e2 & 1.2e1±2.1e1 & 3.1e1±7.5e1 & 2.2e3±5.4e3 \\
+            d*     & 1.0e3±1.8e3 & 1.1e2±1.6e2 & 1.9e2±3.2e2 & 7.9e3±1.2e4 \\
+            \hline
+        \end{tabular}
 
     \end{frame}
 

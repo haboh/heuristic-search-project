@@ -4,7 +4,6 @@ import subprocess
 from typing import List, Tuple
 from pathlib import Path
 import os
-import shutil
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 Task = namedtuple('task', 'begin_x begin_y end_x end_y')
@@ -84,7 +83,7 @@ def create_comparative_plot(log_folder: Path, field: str, used_algorithms: List[
 algorithms = 'dynswsffp', 'astar', 'dstarlite'
 benchmark_folder = Path('.') / 'output' / 'benchmarks'
 run_names = ['brc504d', 'den401d', 'NewYork_1_256', 'Labyrinth']
-# den401d is typical building room layoutm, NewYork --a typical city,  brc504d -- a typical maze-like
+# den401d is typical buizlding room layoutm, NewYork --a typical city,  brc504d -- a typical maze-like
 radii = [5, 10, 15, 20, 50]
 
 def run_experiments():
@@ -124,6 +123,6 @@ if __name__ == '__main__':
                 log_folder = benchmark_folder / f'r{radius}' / run_name
                 output_folder = Path('.') / 'output' / 'plots' / f'r{radius}'
                 os.makedirs(output_folder, exist_ok=True)
-                output_path = output_folder / f'{run_name}-{str(used_algorithms)}.pdf'
+                output_path = output_folder / f'{run_name}-{str(used_algorithms)}.png'
                 create_comparative_plot(log_folder, 'time_millis', used_algorithms, output_path)
 

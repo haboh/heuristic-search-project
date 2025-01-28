@@ -20,6 +20,16 @@ namespace unknownterrain
             std::string output_name,
             bool needAnimation = false
         );
+
+        template <typename HeuristicFunc>
+        static result::PathSearchResult findShortestPathWithAnimation
+        (
+            grid::GridView grid,
+            grid::GridPoint start,
+            grid::GridPoint goal,
+            HeuristicFunc heuristicFunc,
+            std::string output_name
+        );
     };
 }
 
