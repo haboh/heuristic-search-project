@@ -45,7 +45,7 @@ Alternatives, you can explore command arguments of the C++ executable after call
 
 ## Results
 
-TODO: link to full report and short comments.
+[report.pdf](Report)
 
 ## Literature
 1. [A*](https://en.wikipedia.org/wiki/A*_search_algorithm)
