@@ -45,7 +45,7 @@ Alternatives, you can explore command arguments of the C++ executable after call
 
 ## Results
 
-[report.pdf](Report)
+[Report](report.pdf)
 
 ## Literature
 1. [A*](https://en.wikipedia.org/wiki/A*_search_algorithm)
