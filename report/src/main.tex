@@ -33,6 +33,7 @@
 
 \lstset{style=mystyle}
 
+
 % Packages
 \usepackage{amsmath}
 \usepackage[utf8]{inputenc}
@@ -45,6 +46,9 @@
 
 \newcommand{\realpositive}{\mathbb{R}_{\geqslant 0}}
 \DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\dstarlite}{\(D^*\ lite\)\,}
+\newcommand{\astar}{\(A^*\)\,}
+
 % Document
 \begin{document}
     \section{Мотивация}
@@ -135,7 +139,7 @@ bool A*(start, goal):
     Мы хотим объединить эти два подхода --- использовать эвристики для направления поиска и использовать инкрементальность для оптимального пересчета решения при появлении новых данных.
     Для этого мы переиспользуем идею из алгоритма Dynamic SWSF-FP.
     Как мы знаем, уравнение \[ g^*(v) = \begin{cases}
-                                            0 &  v == s\\
+                                            0 &  v = s\\
                                             \min_{v' \in neighbors(v)} (w(v, v') + g^*(v')) \\
     \end{cases} \]
     задает оценку $g^*(v)$ кратчайшего пути от $s$ до произвольной вершины $v$.
@@ -148,10 +152,8 @@ bool A*(start, goal):
     Заметим, что при изменении веса ребер у нас меняются $rhs$-значения у вершин, связанных с этими ребрами.
     По нашему алгоритму, мы будем исправлять неконсистентность лишь у необходимого количества вершин, начиная с вершин, находящихся рядом с измененными ребрами.
 
-    \textbf{\LARGE Сюда надо вставить псевдокод LPA star.}
 
-
-    \section{Алгоритм $D^*$ lite}
+    \section{Алгоритм \dstarlite}
     Возможность пересчитывать кратчайшие пути позволяет нам решать следующую задачу.
     Пусть у нас есть агент с ограниченным зрением, который должен дойти до некоторой точки на карте.
     Изначально у него нет никакой карты местности, но он обновляет свои данные, когда препятствия попадают в его поле зрения.
@@ -161,142 +163,7 @@ bool A*(start, goal):
     Агент может на очередном шаге строить кратчайший путь от цели до себя, основываясь на известных ему данных.
     После очередного шага он использует информацию о полученных препятствиях, чтобы обновить план кратчайшего пути от цели до себя.
 
-
-    \section{Экспериментальные исследования}
-
-    Мы будем исследовать алгоритм $D^* lite$ в задаче поиска пути на карте с ограниченной видимостью.
-    Для этого мы используем карты с датасета MovingAI~\cite{sturtevant2012benchmarks}.
-    Мы используем 4 карты, которые обобщают реально встречающиеся топологии у агентов в реальной жизни: план этажа, город, разные виды лабиринтов.
-    \begin{figure}
-        \centering
-        \begin{subfigure}[b]{0.24\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{../maps/Labyrinth}
-            \caption{Labyrinth}
-            \label{fig:y equals x}
-        \end{subfigure}
-        \hfill
-        \begin{subfigure}[b]{0.24\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{../maps/den401d}
-            \caption{den401d}
-        \end{subfigure}
-        \hfill
-        \begin{subfigure}[b]{0.24\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{../maps/brc504d}
-            \caption{brc504d}
-        \end{subfigure}
-        \begin{subfigure}[b]{0.24\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{../maps/NewYork_1_256}
-          %   \caption{NewYork_1_256}
-        \end{subfigure}
-        \caption{Three simple graphs}
-        \label{fig:three graphs}
-    \end{figure}
-
-    Для каждой карты мы равномерно выберем хотя бы 100 сценариев, выбирая каждый 5 сценарий в файле сценариев, и запустим на них агента с различными радиусами видимости.
-    Будем отслеживать только производительность, считая, что память не является узким местом в областях применения данного алгоритма.
-    В качестве метрик мы возьмем время работы алгоритма на карте, а также для воспроизводимости результатов число операций, модифицирующих очередь с приоритетом (во всех алгоритмах мы использовали для очереди с приоритетом одну и ту же структуру данных) и количество чтений/записей полей вершины.
-
-
-
-
-
-
-
-    \section{Литература}
-    \bibliography{main}
-    \bibliographystyle{plain}
-
-
-\begin{lstlisting}[language=Python, caption=A*]
-def Main(start, goal):
-     U = {}
-     Q = {}
-     Q.push(start)
-     g[start] = 0
-     f[start] = g[start] + h(start)
-     while Q.size() != 0
-          current = Q.top() // vertex with minimal f-value
-          if current == goal
-               return true  // path found
-          Q.remove(current)
-          U.push(current)
-          for v : N(current)
-               // d(current, v) --- cost of passing from current to v
-               tentativeScore = g[current] + d(current, v)
-               if v in U and tentativeScore >= g[v]
-                    continue
-               if v in U or tentativeScore < g[v]
-                    parent[v] = current
-                    g[v] = tentativeScore
-                    f[v] = g[v] + h(v)
-                    if v in Q
-                         Q.push(v)
-     return false
-\end{lstlisting}
-
-
-
-\begin{lstlisting}[language=Python, caption=SWSFP]
-def computeRHS(p)
-     rhs(point) = infinity
-     for n in N(p):
-          rhs(point) = min(d(n) + cost(p, n), rhs(p))
-
-def computeKey(p):
-     return min(d(o), rhs(p))
-
-
-def checkInconsistency(p):
-     if rhs(point) != d(point):
-          inconsistentVertices.insert((computeKey(point), point))
-
-def updateNeigboursAndVertex(p):
-     for n in N(p):
-          computeRHS(n)
-          checkInconsistency(n)
-     computeRHS(point)
-     checkInconsistency(point)
-
-def computePath():
-     while inconsistentVertices:
-          key, u = inconsistentVertices.top()
-          inconsistentVertices.erase((key, u))
-          if rhs(u) == d(u):
-               continue
-          if rhs(u) < d(u):
-               d(u) = rhs(u)
-          else:
-               d(u) = infinity
-          updateNeigboursAndVertex(u)
-
-def Initialize():
-     rhs = dict()
-     d = dict()
-     inconsistentVertices = {}
-     // set all rhs to infinity by default
-     // set all d to infinity by default
-     rhs[goal] = 0
-     inconsistentVertices.add((computeKey(goal), goal));
-     ComputePath()
-
-def Main():
-     Initialize()
-     while (start != goal):
-          if (d(start) == infinity_cost)
-               return false
-          start = // select neighbours of start with minimal d value
-          for n in changedEdges:
-               updateNeigboursAndVertex(n)
-          updateNeigboursAndVertex(start)
-          computePath()
-\end{lstlisting}
-
-
-\begin{lstlisting}[language=Python, caption=D* lite ]
+    \begin{lstlisting}[language=Python, caption=D* lite ]
 def CalculateKey(s):
      return (min(g(s), rhs(s) + h(s), min(g(s), rhs(s))))
 def Initialize():
@@ -334,7 +201,143 @@ def Main():
           for (u, v) in observedEdges:
                UpdateVertex(u)
                UpdateVertex(v)
-\end{lstlisting}
+    \end{lstlisting}
 
+
+    \section{Экспериментальные исследования}
+
+    Мы будем исследовать алгоритм \dstarlite в задаче поиска пути на карте с ограниченной видимостью.
+    Для этого мы используем карты с датасета MovingAI~\cite{sturtevant2012benchmarks}.
+    Мы используем 4 карты, которые обобщают реально встречающиеся топологии у агентов в реальной жизни: план этажа, город, разные виды лабиринтов (см. рис.  \ref{fig:maps}).
+    Ширина каждой карты, кроме Labyrinth, примерно равна 250, ширина Labyrinth же примерно равна 800 (точные размеры карт доступны в репозитории).
+    Здесь и далее, когда мы говорим о малой видимости, мы имеем в виду радиус видимости в 5 клетки, большой видимости --- в 50 клеток.
+    \begin{figure}
+        \centering
+        \begin{subfigure}[b]{0.24\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../maps/Labyrinth}
+            \caption{Labyrinth}
+            \label{fig:y equals x}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.24\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../maps/den401d}
+            \caption{den401d}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.24\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../maps/brc504d}
+            \caption{brc504d}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.24\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../maps/NewYork_1_256}
+            \caption{NewYork}
+        \end{subfigure}
+        \caption{Карты, использующиеся для измерения производительности}
+        \label{fig:maps}
+    \end{figure}
+
+    Для каждой карты мы равномерно выберем хотя бы 100 сценариев, выбирая каждый 5 сценарий в файле сценариев, и запустим на них агента с различными радиусами видимости.
+    Будем отслеживать только производительность, считая, что память не является узким местом в областях применения данного алгоритма.
+    В качестве метрик мы возьмем время работы алгоритма на карте, а также для воспроизводимости результатов число операций, модифицирующих очередь с приоритетом (во всех алгоритмах мы использовали для очереди с приоритетом одну и ту же структуру данных) и количество чтений/записей полей вершины.
+
+    \begin{figure}
+        \centering
+        \begin{subfigure}[b]{0.48\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../plots/r5/den401d-('dynswsffp', 'astar', 'dstarlite').png}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.48\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../plots/r5/den401d-('astar', 'dstarlite').png}
+        \end{subfigure}
+        \caption{den401d, малая видимость, производительность в ms}
+        \label{fig: den401d-r5}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+        \begin{subfigure}[b]{0.48\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../plots/r5/Labyrinth-('dynswsffp', 'astar', 'dstarlite').png}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.48\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../plots/r5/Labyrinth-('astar', 'dstarlite').png}
+        \end{subfigure}
+        \caption{Labyrinth, малая видимость, производительность в ms}
+        \label{fig: Labyrinth-r5}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+        \begin{subfigure}[b]{0.48\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../plots/r5/brc504d-('dynswsffp', 'astar', 'dstarlite').png}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.48\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../plots/r5/brc504d-('astar', 'dstarlite').png}
+        \end{subfigure}
+        \caption{brc504d, малая видимость, производительность в ms}
+        \label{fig: brc504d-r5}
+
+    \end{figure}
+
+    \begin{figure}
+        \centering
+        \begin{subfigure}[b]{0.48\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../plots/r5/NewYork_1_256-('dynswsffp', 'astar', 'dstarlite').png}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.48\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../plots/r5/NewYork_1_256-('astar', 'dstarlite').png}
+        \end{subfigure}
+        \caption{NewYork\_1\_256, малая видимость, производительность в ms}
+        \label{fig: NewYork_1_256-r5}
+    \end{figure}
+
+
+
+    Во-первых, результаты экспериментов показали, что использование эвристик дает крайне существенный прирост к производительности, в связи с чем нерационально использовать инкрементальность алгоритма вместо использования эвристик.
+
+    Во-вторых, на низкой видимости в лабиринтоподобных картах (Labyrinth, brc504d) топологиях алгоритм \dstarlite дает существенный прирост к производительности: практически отсутствуют выбросы, межквартильный размах меньше более чем в полтора раза (см. рис. \ref{fig: den401d-r5}); медиана при этом примерно такая же, но ощутимо меньше на более сложной карте -- см. \ref{fig: Labyrinth-r5}, \ref{fig: brc504d-r5}).
+    На других топологиях $D^* lite$ дает немного большие затраты времени, но реальная производительность получается сравнимой с $A^*$, см. Рис. \ref{fig: NewYork_1_256-r5}.
+
+    \begin{figure}
+        \centering
+        \begin{subfigure}[b]{0.48\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../plots/r50/Labyrinth-('dynswsffp', 'astar', 'dstarlite').png}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.48\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{../plots/r50/Labyrinth-('astar', 'dstarlite').png}
+        \end{subfigure}
+        \caption{Labyrinth, большая видимость (радиус 50), производительность в ms}
+        \label{fig: Labyrinth-r50}
+    \end{figure}
+
+
+    В-третьих, при большой видимости карты (иными словами, с увеличением радиуса видимости) алгоритм \dstarlite дает уже не такие впечатляющие результаты, существенно уступая в производительности \astar, см. Рис. \ref{fig: Labyrinth-r50}.
+
+    \section{Заключение}
+    Мы реализовали алгоритм \dstarlite, включащий в себя инкрементальность Dynamic SWSF-FP и использование эвристик, подобно \astar.
+    Также мы провели его экспериментальное исследование, сравнив с вышеупомянутыми алгоритмами.
+    Алгоритм показал себя исключительно хорошо в ситуациях малой видимости и на сложных картах.
+    В других же ситуациях алгоритм давал результаты, которые в среднем несколько хуже, чем результаты \astar.
+
+    \newpage
+    \bibliography{main}
+    \bibliographystyle{plain}
 
 \end{document}
