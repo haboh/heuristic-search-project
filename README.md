@@ -39,7 +39,9 @@ heuristic-search-project
 
 ## Run
 
-TODO: HOW TO RUN CODE
+The recommended way to your program is via python wrapper script, after compiling the project with `make all`.
+The sample code to run a task can be found in file `code/benchmarks.py`, which generates `hello.gif` animation of a simple task.
+Alternatives, you can explore command arguments of the C++ executable after calling `output/main --help`.
 
 ## Results
 

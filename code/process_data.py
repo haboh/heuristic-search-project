@@ -54,12 +54,13 @@ def read_all_execution_data(root: Path) -> List[ExperimentEntry]:
 
 
 algorithms = ["dynswsffp", "astar", "dstarlite"]
+main_algorithms = algorithms[1:]
 run_names = ["brc504d", "den401d", "NewYork_1_256", "Labyrinth"]
 
 def create_perf_table(data: List[ExperimentEntry]):
     header_row = [""] + run_names
     table = [header_row]
-    for i, algorithm in enumerate(algorithms):
+    for i, algorithm in enumerate(main_algorithms):
         row = [algorithm]
         for run_name in run_names:
             needed_data = [
@@ -69,8 +70,8 @@ def create_perf_table(data: List[ExperimentEntry]):
                 and x.algorithm == algorithm
                 and x.metrics is not None
             ]
-            mean_perf = np.mean([x.metrics.time_ms for x in needed_data])
-            std = np.std([x.metrics.time_ms for x in needed_data])
+            mean_perf = np.mean([x.metrics.set_ops for x in needed_data])
+            std = np.std([x.metrics.set_ops for x in needed_data])
             row.append("%.1e" % mean_perf + '±' + "%.1e" % (2 * std))
         table.append(row)
     return tb.tabulate(table, headers="firstrow", tablefmt='latex')
@@ -78,14 +79,14 @@ def create_perf_table(data: List[ExperimentEntry]):
 def create_map_bar_plot(data: List[ExperimentEntry], title: str):
     means = []
     stds = []
-    for algorithm in algorithms:
+    for algorithm in main_algorithms:
         perf_data = [x.metrics.time_ms for x in data if  x.algorithm == algorithm and x.metrics is not None]
         mean = np.mean(perf_data)
         std = np.std(perf_data)
         means.append(mean)
         stds.append(std)
-    plt.bar(algorithms, means)
-    plt.errorbar(algorithms, means, yerr=stds, fmt="o", color="r")
+    plt.bar(main_algorithms, means)
+    plt.errorbar(main_algorithms, means, yerr=stds, fmt="o", color="r")
     plt.ylabel('time, ms')
     plt.title(title)
     plt.show()

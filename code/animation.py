@@ -49,7 +49,7 @@ def draw_predicted_path(draw_obj: ImageDraw, predicted_path: List[point], scale:
     for substep in predicted_path:
         center = (substep.x * scale + 0.5 * scale, substep.y * scale + 0.5 * scale)
         draw_obj.circle(
-            radius=scale / 5, xy=center, fill=(255, 255, 255, 255), width=0.0
+            radius=scale / 5, xy=center, fill=(0, 0, 255, 255), width=0.0
         )
 
 
@@ -191,12 +191,12 @@ def run(
         display_path(dstar_data, output_folder + f"/{run_name}-{tasknum}.png")
 
 
-task = namedtuple("task", "run_name begin end step radius")
-tasks = [
-    task("den401d", 300, 700, 50, 10),
-    task("NewYork_1_256", 400, 550, 50, 20),
-    task("brc504d", 100, 350, 50, 10),
-]
+# task = namedtuple("task", "run_name begin end step radius")
+# tasks = [
+#     task("den401d", 300, 700, 50, 10),
+#     task("NewYork_1_256", 400, 550, 50, 20),
+#     task("brc504d", 100, 350, 50, 10),
+# ]
 # for task in tasks:
 #     for i in range(task.begin, task.end, task.step):
 #         run(task.run_name, i, task.radius, 'output/' + task.run_name, animation=False, write_path=True)
@@ -204,4 +204,4 @@ tasks = [
 # run("den401d", 45, 10)
 
 
-run("den401d", 300, 50, "output/test", animation=True, show=True, write_path=True)
+# run("den401d", 300, 50, "output/test", animation=True, show=True, write_path=True)

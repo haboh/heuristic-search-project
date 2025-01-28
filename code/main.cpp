@@ -186,7 +186,7 @@ int main(int argc, char **argv) {
   const auto mapPath = program.get<std::string>("--map");
   const auto algorithm = program.get<std::string>("--algorithm");
   const auto needDisplayPath = program.get<bool>("--display-path");
-  const auto animationDataPath = program.get<std::string>("--animation");
+  const auto animationDataPath = program.get<std::string>("--animation-data-path");
 
   const auto map = readMapFile(mapPath);
   grid::Grid grid(map);
@@ -198,7 +198,7 @@ int main(int argc, char **argv) {
     if (animationDataPath != "none") {
       if (algorithm == "dstarlite") {
         return unknownterrain::DStarLite::findShortestPathWithAnimation(
-            gridView, begin, end, manhattan, "output/mytest");
+            gridView, begin, end, manhattan, animationDataPath);
       } else {
         throw std::runtime_error("animation supported only with dstarlite");
       }
