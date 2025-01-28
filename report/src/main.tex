@@ -3,6 +3,34 @@
 
 % Preamble
 \documentclass[11pt]{article}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstset{style=mystyle}
 
 % Packages
 \usepackage{amsmath}
@@ -10,6 +38,7 @@
 \usepackage[russian]{babel}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+
 
 
 \newcommand{\realpositive}{\mathbb{R}_{\geqslant 0}}
@@ -62,9 +91,8 @@ for i in 1..n:
      Мы бы хотели минимизировать число итераций алгоритма $\fplan$ и $\fextract$ в ходе исполнения псевдокода выше.
 
 
-
-\begin{verbatim}
-bool A*(start, goal):
+\begin{lstlisting}[language=Python, caption=A*]
+def Main(start, goal):
      U = {}
      Q = {}
      Q.push(start)
@@ -88,8 +116,105 @@ bool A*(start, goal):
                     if v in Q
                          Q.push(v)
      return false
-\end{verbatim}
+\end{lstlisting}
 
+
+
+\begin{lstlisting}[language=Python, caption=SWSFP]
+def computeRHS(p)
+     rhs(point) = infinity
+     for n in N(p):
+          rhs(point) = min(d(n) + cost(p, n), rhs(p))
+
+def computeKey(p):
+     return min(d(o), rhs(p))
+
+
+def checkInconsistency(p):
+     if rhs(point) != d(point):
+          inconsistentVertices.insert((computeKey(point), point))
+
+def updateNeigboursAndVertex(p):
+     for n in N(p):
+          computeRHS(n)
+          checkInconsistency(n)
+     computeRHS(point)
+     checkInconsistency(point)
+
+def computePath():
+     while inconsistentVertices:
+          key, u = inconsistentVertices.top()
+          inconsistentVertices.erase((key, u))
+          if rhs(u) == d(u):
+               continue
+          if rhs(u) < d(u):
+               d(u) = rhs(u)
+          else:
+               d(u) = infinity
+          updateNeigboursAndVertex(u)
+
+def Initialize():
+     rhs = dict()
+     d = dict()
+     inconsistentVertices = {}
+     // set all rhs to infinity by default
+     // set all d to infinity by default
+     rhs[goal] = 0
+     inconsistentVertices.add((computeKey(goal), goal));
+     ComputePath()
+
+def Main():
+     Initialize()
+     while (start != goal):
+          if (d(start) == infinity_cost)
+               return false
+          start = // select neighbours of start with minimal d value
+          for n in changedEdges:
+               updateNeigboursAndVertex(n)
+          updateNeigboursAndVertex(start)
+          computePath()
+\end{lstlisting}
+
+
+\begin{lstlisting}[language=Python, caption=D* lite ]
+def CalculateKey(s):
+     return (min(g(s), rhs(s) + h(s), min(g(s), rhs(s))))
+def Initialize():
+     U = dict()
+     for s in S:
+          rhs(s) = g(s) = infinity
+     rhs(start) = 0
+     U.insert((start, (h(start), 0)))
+
+def UpdateVertex(u):
+     if u != start:
+          rhs(u) =min([g(v) + c(v, u) for v in pred(u)])
+     if u in U:
+          U.remove(u)
+     if g(u) != rhs(u):
+          U.insert(u, CalculateKey(u))
+
+def ComputeShortestPath():
+     while U.topKey() < CalculateKey(goal) or rhs(goal) != g(goal):
+          u = U.pop()
+          if g(u) > rhs(u):
+               g(u) = rhs(u)
+               for s in succ(u):
+                    UpdateVertex(s)
+          else:
+               g(u) = infinity
+               for s in succ(u) + {u}:
+                    UpdateVertex(s)
+
+def Main():
+     Initialize()
+     while True:
+          ComputeShortestPath()
+          // make move along the shortest path to goal
+          for (u, v) in observedEdges:
+               UpdateVertex(u)
+               UpdateVertex(v)
+\end{lstlisting}
 
 
 \end{document}
