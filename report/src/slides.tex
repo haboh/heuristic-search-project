@@ -50,7 +50,7 @@
 g, start, goal = init_graph()
 while undet():
     updates = receive_updated_edges_w()
-    replan_shortest_path( # LPA*
+    replan_shortest_path( # longterm planning
         start,
         goal,
         g,
@@ -148,6 +148,36 @@ while undet():
 
 
     \end{frame}
+
+    \begin{frame}
+        \frametitle{LPA$^*$ с нуля}
+        \begin{figure}
+            \centering
+            \begin{subfigure}[b]{0.49\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../figures/rexample-1-1}
+                \vspace{4.6cm}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}[b]{0.49\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../figures/rexample-1-2}
+            \end{subfigure}
+        \end{figure}
+
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{LPA$^*$ после изменения веса}
+        \begin{figure}
+            \centering
+            \includegraphics[height=.75\textheight]{../figures/rexample-2}
+        \end{figure}
+
+    \end{frame}
+
+
+
     \begin{frame}[fragile]
         \frametitle{Алгоритм D* lite}
         \begin{center}
@@ -177,6 +207,37 @@ while undet():
                 \item Датасет MovingAI
             \end{itemize}
         \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Карты}
+        \begin{figure}
+            \centering
+            \begin{subfigure}[b]{0.24\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../maps/Labyrinth}
+                \caption{Labyrinth}
+                \label{fig:y equals x}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}[b]{0.24\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../maps/den401d}
+                \caption{den401d}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}[b]{0.24\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../maps/brc504d}
+                \caption{brc504d}
+            \end{subfigure}
+            \begin{subfigure}[b]{0.24\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{../maps/NewYork_1_256}
+                \caption{NewYork}
+            \end{subfigure}
+            \label{fig:maps}
+        \end{figure}
     \end{frame}
 
     \begin{frame}
@@ -264,6 +325,10 @@ while undet():
     \newcommand{\dstarlite}{\(D^*\ lite\)\,}
     \begin{frame}
         \frametitle{Заключение}
+        \begin{itemize}
+            \item Инкрементальность $<$ эвристика $<$ эвристика $+$ инкрементальность
+            \item Но не всегда
+        \end{itemize}
     \end{frame}
 \end{document}
 
